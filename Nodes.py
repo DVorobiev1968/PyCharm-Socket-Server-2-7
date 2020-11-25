@@ -148,7 +148,7 @@ class Nodes():
                  0,
                  "",
                  "",
-                 []]
+                 None]
         self.dict_nodes = dict(zip(key, value))
         self.list_nodes = []
 
@@ -174,6 +174,7 @@ class Nodes():
         if (length == 0):
             dict_temp = item.copy()
             self.list_nodes.append(dict_temp)
+            i_status = PLCGlobals.ADD_OK
         else:
             for i in range(length):
                 dict_temp = self.list_nodes[i].copy()
@@ -183,6 +184,8 @@ class Nodes():
             if (i_status == PLCGlobals.UPDATE_FAIL):
                 dict_temp = item.copy()
                 self.list_nodes.append(dict_temp)
+                i_status=PLCGlobals.ADD_OK
+        return i_status
 
     def get_val(self, id_Node, name_field):
         result = None
@@ -243,7 +246,7 @@ class Nodes():
                         result = self.list_nodes[i].get(name_field)
         if i_status == PLCGlobals.SET_VAL_FAIL and "i_idNode" in name_field:
             self.set_dict_val("i_idNode", value)
-            self.add_item_nodes(self.dict_nodes)
+            i_status=self.add_item_nodes(self.dict_nodes)
         return i_status
 
     def find_node(self, id_node):
@@ -267,9 +270,8 @@ class Nodes():
                  self.mesPacked.print_message(self.list_nodes[i]["Obj"].list_objs[j], PLCGlobals.INFO)
 
 ################################ start section #################################
-def loadObjs(id_node):
+def loadObjs(id_node,objs):
     # тестируем объекты в узлах
-    objs = Objs()
     for i in range(1, 10):
         h_idObj=0x1000+i
         h_idSubObj=0x0
@@ -278,9 +280,9 @@ def loadObjs(id_node):
         objs.set_val(h_idObj,"h_idSubObj",h_idSubObj)
         objs.set_val(h_idObj,"i_typeData",objs.mesPacked.dict_typeData["Float"])
         objs.set_val(h_idObj,"d_value",d_value)
-        objs.mesPacked.initNodeStruct(id_node,h_idObj,h_idSubObj,d_value)
-        objs.set_val(h_idObj, "b_message")
-        objs.set_val(h_idObj, "i_check")
+        # objs.mesPacked.initNodeStruct(id_node,h_idObj,h_idSubObj,d_value)
+        # objs.set_val(h_idObj, "b_message")
+        # objs.set_val(h_idObj, "i_check")
     return objs
 
 if __name__ == '__main__':
@@ -292,12 +294,14 @@ if __name__ == '__main__':
 
     # тестируем узлы
     for i in range(1, 10):
-        nodes.set_val(i,"i_idNode",i)
+        i_status=nodes.set_val(i,"i_idNode",i)
         nodes.set_val(i,"i_code_answer",nodes.mesPacked.OK)
         nodes.set_val(i,"i_codeCommand",nodes.mesPacked.CODE_START)
         nodes.set_val(i,"s_command",nodes.mesPacked.dict_classif[nodes.mesPacked.CODE_START])
         nodes.set_val(i,"s_message",nodes.mesPacked.dict_classif[nodes.mesPacked.OK])
-        nodes.set_val(i,"Objs",loadObjs(i))
+        if (i_status==PLCGlobals.ADD_OK):
+            obj = Objs()
+            nodes.set_val(i,"Objs",loadObjs(i,obj))
 
     id_node=7
     id_nodeObj=0x1000+5

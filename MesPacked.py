@@ -171,7 +171,8 @@ class MesPacked():
         nodeStruct.o_obj.b_message = bytes("{0};{1}\r\n".format(nodeStruct.o_obj.b_message, i_length))
         nodeStruct.o_obj.b_obj=pickle.dumps(nodeStruct,0)
         i_length_obj=len(nodeStruct.o_obj.b_obj)
-        return i_length,nodeStruct.o_obj.b_message,nodeStruct.o_obj.b_obj
+        # return i_length,nodeStruct.o_obj.b_message,nodeStruct.o_obj.b_obj
+        return i_length,nodeStruct
 
     def set_CRC(self):
         i_crc=0
@@ -190,16 +191,16 @@ class MesPacked():
         b_obj=bytes()
         if i_data == nodeStruct.o_obj.i_check:
             if nodeStruct.i_codeCommand == self.CODE_START:
-                i_length, b_message, b_obj = self.setB_message(self.OK, nodeStruct)
+                i_length, nodeStruct = self.setB_message(self.OK, nodeStruct)
                 i_status = self.OK
             elif nodeStruct.i_codeCommand == self.CODE_STOP:
-                i_length, b_message, b_obj = self.setB_message(self.OK,nodeStruct)
+                i_length, nodeStruct = self.setB_message(self.OK,nodeStruct)
                 i_status = self.OK
         else:
-            i_length, b_message, b_obj = self.setB_message(self.ERR,nodeStruct)
+            i_length, nodeStruct = self.setB_message(self.ERR,nodeStruct)
             i_status = self.ERR
 
-        return i_status, i_length, b_message, b_obj
+        return i_status, i_length, nodeStruct
 
     def recvMessage(self, data):
         """
@@ -215,8 +216,7 @@ class MesPacked():
         self.print_message(self.nodeStruct.s_message, PLCGlobals.INFO)
         i_status, \
         i_length, \
-        self.nodeStruct.o_obj.b_message,\
-        self.nodeStruct.o_obj.b_obj = self.sendMessage(i_data,self.nodeStruct)
+        self.nodeStruct = self.sendMessage(i_data,self.nodeStruct)
         return i_status
 
     def recvMessageNode(self, data):
@@ -235,8 +235,7 @@ class MesPacked():
         self.print_message(self.errMessage, PLCGlobals.INFO)
         i_status, \
         i_length, \
-        nodeStruct.o_obj.b_message,\
-        nodeStruct.o_obj.b_obj = self.sendMessage(i_data,nodeStruct)
+        self.nodeStruct = self.sendMessage(i_data,nodeStruct)
 
         return i_status, nodeStruct
 

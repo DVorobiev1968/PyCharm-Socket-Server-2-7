@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import sys, string, getopt, thread, socket
-from MesPacked import MesPacked
+from MesPacked import MesPacked, NodeInfo, NodeObjInfo
 from PLCGlobals import PLCGlobals
 from Nodes import Nodes, Objs
 
+# global mesPacked, nodes
 def main():
+    global mesPacked, nodes
     mesPacked = MesPacked()
     nodes = Nodes()
-    objs = Objs()
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "")
         if len(args) > 1:
@@ -61,7 +63,7 @@ def main_thread(port):
 
 
 def service_thread(conn, addr):
-    global mesPacked
+    # global mesPacked
     (caddr, cport) = addr
     mesPacked.print_message("Thread {0:s} has connection from {1:s}.".format(str(thread.get_ident()), caddr),
                             PLCGlobals.INFO)
@@ -73,32 +75,50 @@ def service_thread(conn, addr):
 
 
 def run_interpreter(stdin, stdout):
-    global mesPacked
+    # global mesPacked
     data = stdin.readline()
     mesPacked.recvMessage(data)
     stdout.write(mesPacked.nodeStruct.o_obj.b_message)
     mesPacked.print_message("b_message:{0}".format(mesPacked.nodeStruct.o_obj.b_message), PLCGlobals.INFO)
 
-def loadObjs(id_node,h_idObj,h_idSubObj,d_value):
-    objs = Objs()
-    objs.set_val(h_idObj,"h_idObj",h_idObj)
-    objs.set_val(h_idObj,"h_idSubObj",h_idSubObj)
-    objs.set_val(h_idObj,"i_typeData",objs.mesPacked.dict_typeData["Float"])
-    objs.set_val(h_idObj,"d_value",d_value)
-    objs.mesPacked.initNodeStruct(id_node,h_idObj,h_idSubObj,d_value)
-    objs.set_val(h_idObj, "b_message")
-    objs.set_val(h_idObj, "i_check")
-    return objs
+def loadObjs(nodeStruct,obj):
+    """
+    Функция сохранения объекта в узле в краткосрочном хранилище
+    :param nodeStruct:
+    :return:
+    """
+    obj.set_val(nodeStruct.o_obj.h_idObj,"h_idObj",nodeStruct.o_obj.h_idObj)
+    obj.set_val(nodeStruct.o_obj.h_idObj,"h_idSubObj",nodeStruct.o_obj.h_idSubObj)
+    obj.set_val(nodeStruct.o_obj.h_idObj,"i_typeData",nodeStruct.o_obj.i_typeData)
+    obj.set_val(nodeStruct.o_obj.h_idObj,"d_value",nodeStruct.o_obj.d_value)
+    return obj
 
-def set_nodes(id_node, h_idObj,h_idSubObj,d_value):
-    global nodes
-    nodes.set_val(id_node, "i_idNode", id_node)
-    nodes.set_val(id_node, "i_code_answer", nodes.mesPacked.OK)
-    nodes.set_val(id_node, "i_codeCommand", nodes.mesPacked.CODE_START)
-    nodes.set_val(id_node, "s_command", nodes.mesPacked.dict_classif[nodes.mesPacked.CODE_START])
-    nodes.set_val(id_node, "s_message", nodes.mesPacked.dict_classif[nodes.mesPacked.OK])
-    nodes.set_val(id_node, "Objs", loadObjs(id_node,h_idObj,h_idSubObj,d_value))
+def set_nodes(i_status, nodeStruct):
+    """
+    Сохраняет узел в краткосрочном хранилище
+    :param i_status: код ошибки получения ответа, его будем ассоциировать с i_code_answer
+    :return:
+    """
+    # global nodes
+    i_append=nodes.set_val(nodeStruct.i_idNode, "i_idNode", nodeStruct.i_idNode)
+    nodes.set_val(nodeStruct.i_idNode, "i_code_answer", i_status)
+    nodes.set_val(nodeStruct.i_idNode, "i_codeCommand", nodeStruct.i_codeCommand)
+    nodes.set_val(nodeStruct.i_idNode, "s_command", nodes.mesPacked.dict_classif[nodeStruct.i_codeCommand])
+    nodes.set_val(nodeStruct.i_idNode, "s_message", nodes.mesPacked.dict_classif[i_status])
+    if (i_append == PLCGlobals.ADD_OK):
+        obj=Objs()
+        nodes.set_val(nodeStruct.i_idNode, "Objs",loadObjs(nodeStruct,obj))
 
+
+def save_node(i_status, nodeStruct):
+    """
+    Функция записывает данные по узлу и объекту в краткосрочный архив
+    :param i_status: код ошибки получения ответа, его будем ассоциировать с i_code_answer
+    :param nodeStruct: объект с данными по узлу
+    :return:
+    """
+    if i_status == mesPacked.OK:
+        set_nodes(i_status,nodeStruct)
 
 def run_parser(stdin, stdout):
     """
@@ -109,10 +129,11 @@ def run_parser(stdin, stdout):
     :return:
     """
     data = stdin.readline()
-    nodeStruct=mesPacked.nodeStruct
+    nodeStruct=NodeInfo()
     while nodeStruct.i_codeCommand!=mesPacked.CODE_EXIT:
         i_status, nodeStruct = mesPacked.recvMessageNode(data)
         if nodeStruct.i_codeCommand==mesPacked.CODE_START:
+            save_node(i_status, nodeStruct)
             if i_status==mesPacked.OK:
                 stdout.write(nodeStruct.o_obj.b_message)
                 mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
@@ -122,6 +143,7 @@ def run_parser(stdin, stdout):
                 pass
         elif nodeStruct.i_codeCommand==mesPacked.CODE_LIST_NODES:
             mesPacked.print_message("Start listing nodes, recieve code:{0}...".format(nodeStruct.i_codeCommand), PLCGlobals.INFO)
+            nodes.print_list_nodes()
             break
         else:
             pass

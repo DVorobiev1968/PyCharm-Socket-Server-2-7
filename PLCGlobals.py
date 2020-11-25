@@ -21,6 +21,8 @@ class PLCGlobals():
     OPEN_DICT_FAIL =    0b10
     OPEN_CSV_OK =       0b1
     OPEN_CSV_FAIL =     0b0
+    ADD_OK =            0b1000
+    ADD_FAIL =          0b1001
     UPDATE_OK =         0b100
     UPDATE_FAIL =       0b101
     SET_VAL_OK =        0b10
