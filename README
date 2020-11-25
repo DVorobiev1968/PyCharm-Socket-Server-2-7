@@ -1,9 +1,6 @@
-This is an example of a multi-threaded C application embedding a
-Python interpreter.
-
-The particular application is a multi-threaded telnet-like server that
-provides you with a Python prompt (instead of a shell prompt).
-
-The file pysvr.py is a prototype in Python.
-
-THIS APPLICATION IS NOT SECURE -- ONLY USE IT FOR TESTING!
+Проект многопоточного сервера.
+Релизован на Python 2.7 с целью совместимости с Beremiz/
+Для сетевого взаимодействия используется телеграммы по подобию протокола CAN.
+Модуль MesPacked содержит класс со структурой данных и методами формирования служебных телеграмм.
+Модуль Nodes содержит класс для организации и управления краткосрочным хранилищем данных.
+Запуск: python pysvr.py
