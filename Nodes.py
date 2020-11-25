@@ -4,36 +4,53 @@ from switch import switch
 from PLCGlobals import PLCGlobals
 from MesPacked import MesPacked
 
-class Objs:
-    messageErr=""
+class Nodes():
+    errMessage= ""
+    mesPacked=MesPacked()
+
     def __init__(self):
-        key = ['h_idObj',
+        key_obj = ['h_idObj',
                'h_idSubObj',
                'i_typeData',
                'd_value',
                'i_check',
                'b_message']
-        value = [0x0,
+        value_obj = [0x0,
                  0x0,
                  0,
                  0.0,
                  0,
                  bytes()]
-        self.dict_objs = dict(zip(key, value))
+        self.dict_objs = dict(zip(key_obj, value_obj))
         self.list_objs = []
-        self.mesPacked=MesPacked()
+
+        key = ['i_idNode',
+               'i_code_answer',
+               'i_codeCommand',
+               's_command',
+               's_message',
+               'Objs']
+        value = [0,
+                 0,
+                 0,
+                 "",
+                 "",
+                 self.list_objs]
+        self.dict_nodes = dict(zip(key, value))
+        self.list_nodes = []
 
     def __del__(self):
         pass
 
-    def set_dict_val(self, key, value):
+#################################################
+    def set_dict_val_obj(self, key, value):
         b_status = False
         if self.dict_objs.get(key) is not None:
             self.dict_objs[key] = value
             b_status = True
         return b_status
 
-    def add_item_dict(self, key, item):
+    def add_item_dict_obj(self, key, item):
         length=len(item)
         self.dict_objs[key]=copy.deepcopy(item)
 
@@ -54,7 +71,7 @@ class Objs:
                 dict_temp = item.copy()
                 self.list_objs.append(dict_temp)
 
-    def get_val(self, id_Obj, name_field):
+    def get_val_obj(self, id_Obj, name_field):
         result = None
         length = len(self.list_objs)
         typeVal = self.mesPacked.dict_typeData["None"]
@@ -83,7 +100,7 @@ class Objs:
             result=0
         return result
 
-    def set_val(self, id_Obj, name_field, value=0):
+    def set_val_obj(self, id_Obj, name_field, value=0):
         i_status = PLCGlobals.SET_VAL_FAIL
         length = len(self.list_objs)
         for i in range(length):
@@ -108,11 +125,11 @@ class Objs:
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case("i_check"):
-                        self.list_objs[i]["i_check"] = self.mesPacked.set_CRC()
+                        self.list_objs[i]["i_check"] = self.mesPacked.set_CRC(self.mesPacked.nodeStruct)
                         i_status = PLCGlobals.SET_VAL_OK
                         break
         if i_status == PLCGlobals.SET_VAL_FAIL and "h_idObj" in name_field:
-            self.set_dict_val("h_idObj", value)
+            self.set_dict_val_obj("h_idObj", value)
             self.add_item_objs(self.dict_objs)
         return i_status
 
@@ -130,30 +147,6 @@ class Objs:
         length = len(self.list_objs)
         for i in range(length):
             self.mesPacked.print_message(self.list_objs[i],PLCGlobals.INFO)
-
-class Nodes():
-    messageErr=""
-    mesPacked=MesPacked()
-
-    def __init__(self):
-
-        key = ['i_idNode',
-               'i_code_answer',
-               'i_codeCommand',
-               's_command',
-               's_message',
-               'Objs']
-        value = [0,
-                 0,
-                 0,
-                 "",
-                 "",
-                 None]
-        self.dict_nodes = dict(zip(key, value))
-        self.list_nodes = []
-
-    def __del__(self):
-        pass
 
     def set_dict_val(self, key, value):
         b_status = False
@@ -239,7 +232,7 @@ class Nodes():
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case("Objs"):
-                        self.list_nodes[i]["Obj"]=value
+                        self.list_nodes[i]["Objs"]=value
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case():
@@ -263,32 +256,31 @@ class Nodes():
         length = len(self.list_nodes)
         for i in range(length):
             self.mesPacked.print_message(self.list_nodes[i],PLCGlobals.INFO)
-            len_objs=len(self.list_nodes[i]["Obj"].list_objs)
-            self.messageErr="Obj:{0:3d}".format(len_objs)
+            len_objs=len(self.list_nodes[i]["Objs"])
+            self.messageErr="Objs:{0:3d}".format(len_objs)
             self.mesPacked.print_message(self.messageErr,PLCGlobals.INFO)
             for j in range(len_objs):
-                 self.mesPacked.print_message(self.list_nodes[i]["Obj"].list_objs[j], PLCGlobals.INFO)
+                 self.mesPacked.print_message(self.list_nodes[i]["Objs"][j], PLCGlobals.INFO)
 
 ################################ start section #################################
-def loadObjs(id_node,objs):
+def loadObjs(id_node,nodes):
     # тестируем объекты в узлах
     for i in range(1, 10):
         h_idObj=0x1000+i
         h_idSubObj=0x0
         d_value=random.random()
-        objs.set_val(h_idObj,"h_idObj",h_idObj)
-        objs.set_val(h_idObj,"h_idSubObj",h_idSubObj)
-        objs.set_val(h_idObj,"i_typeData",objs.mesPacked.dict_typeData["Float"])
-        objs.set_val(h_idObj,"d_value",d_value)
+        nodes.set_val_obj(h_idObj,"h_idObj",h_idObj)
+        nodes.set_val_obj(h_idObj,"h_idSubObj",h_idSubObj)
+        nodes.set_val_obj(h_idObj,"i_typeData",nodes.mesPacked.dict_typeData["Float"])
+        nodes.set_val_obj(h_idObj,"d_value",d_value)
         # objs.mesPacked.initNodeStruct(id_node,h_idObj,h_idSubObj,d_value)
         # objs.set_val(h_idObj, "b_message")
         # objs.set_val(h_idObj, "i_check")
-    return objs
-
+    return nodes.list_objs
 if __name__ == '__main__':
     global debug
 
-    messageErr = "py_runtime start..."
+    errMessage = "py_runtime start..."
 
     nodes = Nodes()
 
@@ -299,18 +291,16 @@ if __name__ == '__main__':
         nodes.set_val(i,"i_codeCommand",nodes.mesPacked.CODE_START)
         nodes.set_val(i,"s_command",nodes.mesPacked.dict_classif[nodes.mesPacked.CODE_START])
         nodes.set_val(i,"s_message",nodes.mesPacked.dict_classif[nodes.mesPacked.OK])
-        if (i_status==PLCGlobals.ADD_OK):
-            obj = Objs()
-            nodes.set_val(i,"Objs",loadObjs(i,obj))
+        nodes.set_val(i,"Objs",loadObjs(i,nodes))
 
-    id_node=7
-    id_nodeObj=0x1000+5
-    b_status, list_nodes=nodes.find_node(id_node)
-    if (b_status):
-        b_status_obj, list_objs=list_nodes['Obj'].find_obj(id_nodeObj)
-        if (b_status_obj):
-            print list_objs
-
+    # id_node=7
+    # id_nodeObj=0x1000+5
+    # b_status, list_nodes=nodes.find_node(id_node)
+    # if (b_status):
+    #     b_status_obj, list_objs=list_nodes['Obj'].find_obj(id_nodeObj)
+    #     if (b_status_obj):
+    #         print list_objs
+    #
 
     nodes.print_list_nodes()
 

@@ -24,7 +24,8 @@ class NodeInfo():
         self.i_codeCommand = 0  # код команды присваивается в зависимости от протокола работы узла
         self.s_command = ""     # описание команды
         self.s_message = ""     # строка получаемая из буфера
-        self.o_obj=NodeObjInfo()
+        self.list_obj=[]        # будет содержаться список NodeObjInfo
+        self.o_obj=NodeObjInfo()    # для nodeStruct
 
 class MesPacked():
     def __init__(self):
@@ -131,26 +132,61 @@ class MesPacked():
         метод для отладки инициализирует переменную
         содержащую структуру узла, с описанием объектов
         внутри применяется только для отладки, в рабочем режиме
-        nodeStruct заполнеятся при получении даннх от клиента
-        :return:
+        nodeStruct заполняется при получении данных от клиента
+        :param id_node:
+        :param idObj:
+        :param idSubObj:
+        :param d_value:
+        :return: объект типа nodeStruct
         """
-        self.nodeStruct.i_idNode=id_node
+        nodeStruct = NodeInfo()  # переменная узел
+        nodeStruct.i_idNode=id_node
         # код команды присваивается в зависимости от протокола работы узла
-        self.nodeStruct.i_codeCommand = self.CODE_START
+        nodeStruct.i_codeCommand = self.CODE_START
         # описание команды
-        self.nodeStruct.s_command = self.dict_classif[self.nodeStruct.i_codeCommand]
+        nodeStruct.s_command = self.dict_classif[self.nodeStruct.i_codeCommand]
         # строка получаемая из буфера
-        self.nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
-        self.nodeStruct.o_obj.h_idObj=0x0+idObj
-        self.nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
-        self.nodeStruct.o_obj.i_typeData=self.dict_typeData["Float"]
-        self.nodeStruct.o_obj.d_value=d_value
+        nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
+        nodeStruct.o_obj.h_idObj=0x0+idObj
+        nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
+        nodeStruct.o_obj.i_typeData=self.dict_typeData["Float"]
+        nodeStruct.o_obj.d_value=d_value
+        return nodeStruct
+
+    def setCommandNodeStruct(self, i_command, id_node=0, idObj=0, idSubObj=0, d_value=0):
+        """
+        метод для отладки инициализирует переменную
+        содержащую структуру узла, с описанием объектов
+        внутри применяется только для отладки, в рабочем режиме
+        nodeStruct заполняется при получении данных от клиента
+        :param id_node:
+        :param idObj:
+        :param idSubObj:
+        :param d_value:
+        :return: объект типа nodeStruct
+        """
+        nodeStruct = NodeInfo()  # переменная узел
+        nodeStruct.i_idNode=id_node
+        # код команды присваивается в зависимости от протокола работы узла
+        nodeStruct.i_codeCommand = i_command
+        # описание команды
+        nodeStruct.s_command = self.dict_classif[self.nodeStruct.i_codeCommand]
+        # строка получаемая из буфера
+        nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
+        # статус ответа OK
+        nodeStruct.i_code_answer=self.mesPacked.OK
+
+        nodeStruct.o_obj.h_idObj=0x0+idObj
+        nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
+        nodeStruct.o_obj.i_typeData=self.dict_typeData["Float"]
+        nodeStruct.o_obj.d_value=d_value
+        return nodeStruct
 
     def setB_message(self, code_err=0, nodeStruct=NodeInfo()):
         """
         метод подготовливает 2 строки для сериализации:
         1. b_message- упрощеная строка содержит информмацию из строкового представления
-        2. b_obj - расширенная непосредственно объект
+        2. b_obj - расширенная непосредственно объект для сериализауии
         :param code_err:
         :param nodeStruct:
         :return:
@@ -171,13 +207,28 @@ class MesPacked():
         nodeStruct.o_obj.b_message = bytes("{0};{1}\r\n".format(nodeStruct.o_obj.b_message, i_length))
         nodeStruct.o_obj.b_obj=pickle.dumps(nodeStruct,0)
         i_length_obj=len(nodeStruct.o_obj.b_obj)
-        # return i_length,nodeStruct.o_obj.b_message,nodeStruct.o_obj.b_obj
         return i_length,nodeStruct
 
-    def set_CRC(self):
+    def set_CRC(self,nodeStruct):
+        """
+        метод расчитывает котрольную сумму по b_message
+        :param nodeStruct:
+        :return:
+        """
         i_crc=0
-        for i in range (len(self.nodeStruct.o_obj.b_message)):
-            i_crc+=len(self.nodeStruct.o_obj.b_message[i])
+        for i in range (len(nodeStruct.o_obj.b_message)):
+            i_crc+=len(nodeStruct.o_obj.b_message[i])
+        return i_crc
+
+    def set_CRC_b_obj(self,nodeStruct):
+        """
+        метод расчитывает котрольную сумму по b_obj
+        :param nodeStruct:
+        :return:
+        """
+        i_crc=0
+        for i in range (len(nodeStruct.o_obj.b_obj)):
+            i_crc+=len(nodeStruct.o_obj.b_obj[i])
         return i_crc
 
     def sendMessage(self, i_data, nodeStruct):
@@ -202,22 +253,23 @@ class MesPacked():
 
         return i_status, i_length, nodeStruct
 
-    def recvMessage(self, data):
+    def recvMessage(self, data, nodeStruct):
         """
         Метод принимает строку байт от клиента и проверяет на целостность данных
         :param data: байтовая строка
-        :return: код ошибки
+        :nodeStruct: объект nodeStruct
+        :return: код ошибки, обработанный объект nodeStruct
         """
         i_status = self.OK
         parse_str = re.split("[;\r\n]", data)
         i_data = len(data)
-        self.readData(parse_str)
-        self.nodeStruct.s_message = "{0}:{1:d}:{2}".format(object.__name__, self.nodeStruct.o_obj.i_check, parse_str)
-        self.print_message(self.nodeStruct.s_message, PLCGlobals.INFO)
+        nodeStruct=self.readData(parse_str, nodeStruct)
+        nodeStruct.s_message = "{0}:{1:d}:{2}".format(object.__name__, nodeStruct.o_obj.i_check, parse_str)
+        self.print_message(nodeStruct.s_message, PLCGlobals.INFO)
         i_status, \
         i_length, \
-        self.nodeStruct = self.sendMessage(i_data,self.nodeStruct)
-        return i_status
+        nodeStruct = self.sendMessage(i_data, nodeStruct)
+        return i_status, nodeStruct
 
     def recvMessageNode(self, data):
         """
@@ -239,33 +291,33 @@ class MesPacked():
 
         return i_status, nodeStruct
 
-    def setValue(self, strValue):
+    def setValue(self, strValue, nodeStruct):
         """
            Метод проверяет тип данных значения и устанавливает соответсвующий тип данных
            :param strValue: строка для парсера
-           :return:
+           :return: nodeStruct
            """
         i_status = self.OK
         if isinstance(strValue, int):
-            self.nodeStruct.o_obj.i_typeData = self.dict_typeData["Integer"]
-            self.nodeStruct.o_obj.d_value = int(strValue)
+            nodeStruct.o_obj.i_typeData = self.dict_typeData["Integer"]
+            nodeStruct.o_obj.d_value = int(strValue)
         elif isinstance(strValue, float):
-            self.nodeStruct.o_obj.i_typeData = self.dict_typeData["Float"]
-            self.nodeStruct.o_obj.d_value = float(strValue)
+            nodeStruct.o_obj.i_typeData = self.dict_typeData["Float"]
+            nodeStruct.o_obj.d_value = float(strValue)
         elif isinstance(strValue, bool):
-            self.nodeStruct.o_obj.i_typeData = self.dict_typeData["Boolean"]
-            self.nodeStruct.o_obj.d_value = bool(strValue)
+            nodeStruct.o_obj.i_typeData = self.dict_typeData["Boolean"]
+            nodeStruct.o_obj.d_value = bool(strValue)
         elif isinstance(strValue, dict):
-            self.nodeStruct.o_obj.i_typeData = self.dict_typeData["Dict"]
-            self.nodeStruct.o_obj.d_value = dict()
+            nodeStruct.o_obj.i_typeData = self.dict_typeData["Dict"]
+            nodeStruct.o_obj.d_value = dict()
         elif isinstance(strValue, str):
-            self.nodeStruct.o_obj.i_typeData = self.dict_typeData["Float"]
-            self.nodeStruct.o_obj.d_value = float(strValue.replace(',', '.'))
+            nodeStruct.o_obj.i_typeData = self.dict_typeData["Float"]
+            nodeStruct.o_obj.d_value = float(strValue.replace(',', '.'))
         else:
-            self.nodeStruct.o_obj.i_typeData = self.dict_typeData["Object"]
-            self.nodeStruct.o_obj.d_value = bytearray(strValue, "utf-8")
+            nodeStruct.o_obj.i_typeData = self.dict_typeData["Object"]
+            nodeStruct.o_obj.d_value = bytearray(strValue, "utf-8")
 
-        return i_status
+        return nodeStruct
 
     def setValueNodeStruct(self, strValue):
         """
@@ -273,7 +325,6 @@ class MesPacked():
            :param strValue: строка для парсера
            :return:i_typeData, d_value
            """
-        i_status = self.OK
         i_typeData=0
         d_value=0
         if isinstance(strValue, int):
@@ -297,51 +348,59 @@ class MesPacked():
 
         return i_typeData, d_value
 
-    def setD_value(self, d_value=0):
+    def setD_value(self, nodeStruct, d_value=0):
+        """
+        метод устанавливает значение d_value, используется для отладки
+        d_value необязательный аргумент, если не указывается то присваивается
+        случайным образом в диапазоне 0-1
+        :param nodeStruct:
+        :param d_value:
+        :return:
+        """
         if d_value == 0:
-            self.nodeStruct.o_obj.d_value *= random.random()
+            nodeStruct.o_obj.d_value *= random.random()
         else:
-            self.nodeStruct.o_obj.d_value=d_value
-            self.nodeStruct.o_obj.d_value=self.nodeStruct.o_obj.d_value
+            nodeStruct.o_obj.d_value=d_value
+        return nodeStruct
 
-    def readData(self, stringData):
+    def readData(self, stringData, nodeStruct):
         """
         Метод парсит телеграмму от клиента раскладывает ее в поля
         :param stringData: в соответствии с принятым соглашением по телеграмме
-        :return: i_status
+        :nodeStruct:
+        :return: i_status, nodeStruct
         """
-        i_status = self.OK
         length = len(stringData)
         for i in range(length - 2):
             for case in switch(i):
                 if case(0):
-                    self.nodeStruct.i_idNode = int(stringData[i])
+                    nodeStruct.i_idNode = int(stringData[i])
                     break
                 if case(1):
-                    self.nodeStruct.i_codeCommand = int(stringData[i])
+                    nodeStruct.i_codeCommand = int(stringData[i])
                     break
                 if case(2):
-                    self.nodeStruct.i_code_answer = int(stringData[i])
+                    nodeStruct.i_code_answer = int(stringData[i])
                     break
                 if case(3):
-                    self.nodeStruct.o_obj.h_idObj = int(stringData[i])
+                    nodeStruct.o_obj.h_idObj = int(stringData[i])
                     break
                 if case(4):
-                    self.nodeStruct.o_obj.h_idSubObj = int(stringData[i])
+                    nodeStruct.o_obj.h_idSubObj = int(stringData[i])
                     break
                 if case(5):
                     break
                 if case(6):
-                    self.setValue(stringData[i])
+                    nodeStruct=self.setValue(stringData[i],nodeStruct)
                     # для отладки после убрать, поскольку запускаем без параметр, будет проставляться random()
-                    self.setD_value()
+                    nodeStruct=self.setD_value(nodeStruct)
                     break
                 if case(length - 3):
-                    self.nodeStruct.o_obj.i_check = int(stringData[i])
+                    nodeStruct.o_obj.i_check = int(stringData[i])
                     break
                 if case():
                     break
-        return i_status
+        return nodeStruct
 
     def readDataNodeStruct(self, stringData):
         """
