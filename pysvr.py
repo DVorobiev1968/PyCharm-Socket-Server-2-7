@@ -69,6 +69,8 @@ def main_thread(host, port):
                                     PLCGlobals.ERROR)
             continue
         thread.start_new_thread(service_thread, (conn, addr))
+        if mesPacked.nodeStruct.i_codeCommand==mesPacked.CODE_EXIT_SERVER:
+            exit(0)
         del conn, addr
 
 
@@ -179,6 +181,11 @@ def run_parser(stdin, stdout):
             stdout.write(nodeStruct.o_obj.b_message)
             mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
             break
+        elif nodeStruct.i_codeCommand == mesPacked.CODE_EXIT_SERVER:
+            mesPacked.print_message("Stop servers, recieve code:{0}...".format(nodeStruct.i_codeCommand),
+                                    PLCGlobals.INFO)
+            mesPacked.nodeStruct.i_codeCommand=mesPacked.CODE_EXIT_SERVER;
+            exit(-1)
         else:
             pass
 

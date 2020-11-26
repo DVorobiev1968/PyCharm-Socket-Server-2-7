@@ -6,12 +6,16 @@
 По умолчанию используются слдующие настройки: localhost, port=8889
 Данные настройки можно изменить если указать их при запуске в качестве параметров, если параметры не указываются,
 то они берутся по умолчанию.
-Порядок работы:
-
-    1. mkdir <targetDir>
-    2. cd <targetDir>
-    3. git clone https://github.com/DVorobiev1968/PyCharm-Socket-Server-2-7.git
-    4. убедиться что установлен Python требуемой версии: python –version
-    5. должно быть: Python 2.7.2
-    6. Запуск с параметрами по умолчанию: python pysvr.py
-    7. Запуск с произвольными параметрами: python pysvr.py <host> <port>
+Установка SocketServer
+1. mkdir <targetDir>
+2. cd <targetDir>
+3. git clone https://github.com/DVorobiev1968/PyCharm-Socket-Server-2-7.git
+4. если проект уже ранее был клонирован, то обновляемся до последней версии:
+    1. git pull
+5. убедиться что установлен Python требуемой версии:
+    1. python –version
+6. должно быть: Python 2.7.2
+7. Запуск с параметрами по умолчанию:
+    1. python pysvr.py
+8. Запуск с произвольными параметрами:
+    1. python pysvr.py <host> <port>

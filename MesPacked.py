@@ -41,6 +41,7 @@ class MesPacked():
         self.CODE_SINGLE_START = 3
         self.CODE_LIST_NODES = 10
         self.CODE_EXIT = 20
+        self.CODE_EXIT_SERVER = 21
         # сетевые настройки
         self.port = 8889
         self.dict_typeData = {
@@ -61,6 +62,7 @@ class MesPacked():
             self.CODE_SINGLE_START: "Single start command",
             self.CODE_LIST_NODES: "Printing nodes list",
             self.CODE_EXIT: "Close connect Client stopped",
+            self.CODE_EXIT_SERVER: "Close connect Server stopped",
             self.ERR: "General error",
             100: "Request not supported.",
             self.SYNTAX_ERR: "Syntax error.",
