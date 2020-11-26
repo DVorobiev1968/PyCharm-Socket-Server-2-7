@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys, string, getopt, thread, socket
-from MesPacked import MesPacked, NodeInfo, NodeObjInfo
+from MesPacked import MesPacked, NodeInfo
 from PLCGlobals import PLCGlobals
 from Nodes import Nodes
 
@@ -21,9 +21,10 @@ def loadSettings(key, mesPacked):
 
 # global mesPacked, nodes
 def main():
-    global mesPacked, nodes
+    global mesPacked, nodes, i_commandCode
     mesPacked = MesPacked()
     nodes = Nodes()
+    i_commandCode=1
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "")
@@ -54,7 +55,7 @@ def usage(msg=None):
     sys.exit(2)
 
 def main_thread(host, port):
-    global mesPacked
+    global mesPacked, i_commandCode
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     sock.bind((host, port))
@@ -69,13 +70,21 @@ def main_thread(host, port):
                                     PLCGlobals.ERROR)
             continue
         thread.start_new_thread(service_thread, (conn, addr))
-        if mesPacked.nodeStruct.i_codeCommand==mesPacked.CODE_EXIT_SERVER:
-            exit(0)
+
+        mesPacked.print_message("Close thread, recieve code:{0}...".
+                                format(i_commandCode),
+                                PLCGlobals.INFO)
+
+        if i_commandCode==mesPacked.CODE_EXIT_SERVER:
+            del conn, addr
+            break
         del conn, addr
 
 
 def service_thread(conn, addr):
     # global mesPacked
+    global i_commandCode
+
     (caddr, cport) = addr
     mesPacked.print_message("Thread {0:s} has connection from {1:s}.".format(str(thread.get_ident()), caddr),
                             PLCGlobals.INFO)
@@ -83,7 +92,12 @@ def service_thread(conn, addr):
     stdout = conn.makefile("w", 0)
     # run_interpreter(stdin, stdout)
     run_parser(stdin, stdout)
-    mesPacked.print_message("Thread {0:s} is done.".format(str(thread.get_ident())), PLCGlobals.INFO)
+    mesPacked.print_message("Thread {0:s} is done. i_codeCommand {1}.".
+                            format(str(thread.get_ident()),i_commandCode), PLCGlobals.INFO)
+    if i_commandCode == mesPacked.CODE_EXIT_SERVER:
+        del conn, addr
+        mesPacked.print_message("sys.exit(0)", PLCGlobals.INFO)
+        exit(0)
 
 
 def run_interpreter(stdin, stdout):
@@ -141,6 +155,8 @@ def run_parser(stdin, stdout):
     :param stdout:
     :return:
     """
+    global i_commandCode
+
     data = stdin.readline()
     nodeStruct = NodeInfo()
     while nodeStruct.i_codeCommand != mesPacked.CODE_EXIT:
@@ -185,7 +201,9 @@ def run_parser(stdin, stdout):
             mesPacked.print_message("Stop servers, recieve code:{0}...".format(nodeStruct.i_codeCommand),
                                     PLCGlobals.INFO)
             mesPacked.nodeStruct.i_codeCommand=mesPacked.CODE_EXIT_SERVER;
-            exit(-1)
+            i_commandCode=mesPacked.CODE_EXIT_SERVER
+            break
+            exit(0)
         else:
             pass
 
