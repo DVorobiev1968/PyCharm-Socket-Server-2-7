@@ -38,6 +38,7 @@ class MesPacked():
         # коды команд
         self.CODE_START = 1
         self.CODE_STOP = 2
+        self.CODE_SINGLE_START = 3
         self.CODE_LIST_NODES = 10
         self.CODE_EXIT = 20
         # сетевые настройки
@@ -57,6 +58,7 @@ class MesPacked():
             self.OK: "Command completed completely",
             self.CODE_START: "Start command",
             self.CODE_STOP: "Stop command",
+            self.CODE_SINGLE_START: "Single start command",
             self.CODE_LIST_NODES: "Printing nodes list",
             self.CODE_EXIT: "Close connect Client stopped",
             self.ERR: "General error",
@@ -174,7 +176,7 @@ class MesPacked():
         # строка получаемая из буфера
         nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
         # статус ответа OK
-        nodeStruct.i_code_answer=self.mesPacked.OK
+        nodeStruct.i_code_answer=self.OK
 
         nodeStruct.o_obj.h_idObj=0x0+idObj
         nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
@@ -242,6 +244,9 @@ class MesPacked():
         b_obj=bytes()
         if i_data == nodeStruct.o_obj.i_check:
             if nodeStruct.i_codeCommand == self.CODE_START:
+                i_length, nodeStruct = self.setB_message(self.OK, nodeStruct)
+                i_status = self.OK
+            elif nodeStruct.i_codeCommand == self.CODE_SINGLE_START:
                 i_length, nodeStruct = self.setB_message(self.OK, nodeStruct)
                 i_status = self.OK
             elif nodeStruct.i_codeCommand == self.CODE_STOP:

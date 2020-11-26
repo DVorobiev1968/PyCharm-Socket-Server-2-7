@@ -5,6 +5,20 @@ from MesPacked import MesPacked, NodeInfo, NodeObjInfo
 from PLCGlobals import PLCGlobals
 from Nodes import Nodes
 
+def loadSettings(key, mesPacked):
+    if key==1:
+        if len(PLCGlobals.host) < 1:
+            return "localhost"
+        else:
+            return PLCGlobals.host
+    elif key==2:
+        if PLCGlobals.PORT < 1:
+            return mesPacked.port
+        else:
+            return PLCGlobals.PORT
+    else:
+        pass
+
 # global mesPacked, nodes
 def main():
     global mesPacked, nodes
@@ -13,7 +27,7 @@ def main():
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "")
-        if len(args) > 1:
+        if len(args) > 2:
             raise getopt.error, "Too many arguments."
     except getopt.error, msg:
         usage(msg)
@@ -21,15 +35,15 @@ def main():
         pass
     if args:
         try:
-            port = string.atoi(args[0])
+            host = args[0]
+            port = string.atoi(args[1])
         except ValueError, msg:
             usage(msg)
     else:
-        if PLCGlobals.PORT < 1:
-            port = mesPacked.port
-        else:
-            port = PLCGlobals.PORT
-    main_thread(port)
+        host = loadSettings(1, mesPacked)
+        port = loadSettings(2, mesPacked)
+
+    main_thread(host, port)
 
 
 def usage(msg=None):
@@ -39,15 +53,11 @@ def usage(msg=None):
     print "\n", __doc__,
     sys.exit(2)
 
-
-def main_thread(port):
+def main_thread(host, port):
     global mesPacked
-
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if len(PLCGlobals.host) < 1:
-        sock.bind(("localhost", port))
-    else:
-        sock.bind((PLCGlobals.host, port))
+
+    sock.bind((host, port))
     sock.listen(5)
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.INFO)
 
@@ -81,21 +91,6 @@ def run_interpreter(stdin, stdout):
     stdout.write(mesPacked.nodeStruct.o_obj.b_message)
     mesPacked.print_message("b_message:{0}".format(mesPacked.nodeStruct.o_obj.b_message), PLCGlobals.INFO)
 
-def loadObjs(id_node,nodes):
-    # тестируем объекты в узлах
-    for i in range(1, 10):
-        h_idObj=0x1000+i
-        h_idSubObj=0x0
-        d_value=random.random()
-        nodes.set_val_obj(h_idObj,"h_idObj",h_idObj)
-        nodes.set_val_obj(h_idObj,"h_idSubObj",h_idSubObj)
-        nodes.set_val_obj(h_idObj,"i_typeData",nodes.mesPacked.dict_typeData["Float"])
-        nodes.set_val_obj(h_idObj,"d_value",d_value)
-        # objs.mesPacked.initNodeStruct(id_node,h_idObj,h_idSubObj,d_value)
-        # objs.set_val(h_idObj, "b_message")
-        # objs.set_val(h_idObj, "i_check")
-    return nodes.list_objs
-
 
 def loadObjs(nodeStruct):
     """
@@ -103,11 +98,12 @@ def loadObjs(nodeStruct):
     :param nodeStruct:
     :return:
     """
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj,"h_idObj",nodeStruct.o_obj.h_idObj)
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj,"h_idSubObj",nodeStruct.o_obj.h_idSubObj)
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj,"i_typeData",nodeStruct.o_obj.i_typeData)
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj,"d_value",nodeStruct.o_obj.d_value)
+    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "h_idObj", nodeStruct.o_obj.h_idObj)
+    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "h_idSubObj", nodeStruct.o_obj.h_idSubObj)
+    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "i_typeData", nodeStruct.o_obj.i_typeData)
+    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "d_value", nodeStruct.o_obj.d_value)
     return nodes.list_objs
+
 
 def set_nodes(i_status, nodeStruct):
     """
@@ -116,7 +112,7 @@ def set_nodes(i_status, nodeStruct):
     :return:
     """
     # global nodes
-    i_append=nodes.set_val(nodeStruct.i_idNode, "i_idNode", nodeStruct.i_idNode)
+    i_append = nodes.set_val(nodeStruct.i_idNode, "i_idNode", nodeStruct.i_idNode)
     nodes.set_val(nodeStruct.i_idNode, "i_code_answer", i_status)
     nodes.set_val(nodeStruct.i_idNode, "i_codeCommand", nodeStruct.i_codeCommand)
     nodes.set_val(nodeStruct.i_idNode, "s_command", nodes.mesPacked.dict_classif[nodeStruct.i_codeCommand])
@@ -132,7 +128,8 @@ def save_node(i_status, nodeStruct):
     :return:
     """
     if i_status == mesPacked.OK:
-        set_nodes(i_status,nodeStruct)
+        set_nodes(i_status, nodeStruct)
+
 
 def run_parser(stdin, stdout):
     """
@@ -143,24 +140,35 @@ def run_parser(stdin, stdout):
     :return:
     """
     data = stdin.readline()
-    nodeStruct=NodeInfo()
-    while nodeStruct.i_codeCommand!=mesPacked.CODE_EXIT:
+    nodeStruct = NodeInfo()
+    while nodeStruct.i_codeCommand != mesPacked.CODE_EXIT:
         i_status, nodeStruct = mesPacked.recvMessageNode(data)
-        if nodeStruct.i_codeCommand==mesPacked.CODE_START:
+        if nodeStruct.i_codeCommand == mesPacked.CODE_START:
             save_node(i_status, nodeStruct)
-            if i_status==mesPacked.OK:
+            if i_status == mesPacked.OK:
                 stdout.write(nodeStruct.o_obj.b_message)
                 mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                 data = stdin.readline()
-                i_status, nodeStruct=mesPacked.recvMessageNode(data)
+                i_status, nodeStruct = mesPacked.recvMessageNode(data)
             else:
                 pass
-        elif nodeStruct.i_codeCommand==mesPacked.CODE_LIST_NODES:
-            mesPacked.print_message("Start listing nodes, recieve code:{0}...".format(nodeStruct.i_codeCommand), PLCGlobals.INFO)
+        if nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START:
+            save_node(i_status, nodeStruct)
+            nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
+            if i_status == mesPacked.OK:
+                stdout.write(nodeStruct.o_obj.b_message)
+                mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
+            else:
+                pass
+
+        elif nodeStruct.i_codeCommand == mesPacked.CODE_LIST_NODES:
+            mesPacked.print_message("Start listing nodes, recieve code:{0}...".format(nodeStruct.i_codeCommand),
+                                    PLCGlobals.INFO)
             nodes.print_list_nodes()
             break
         elif nodeStruct.i_codeCommand == mesPacked.CODE_STOP:
-            mesPacked.print_message("Stop recieve, recieve code:{0}...".format(nodeStruct.i_codeCommand), PLCGlobals.INFO)
+            mesPacked.print_message("Stop recieve, recieve code:{0}...".format(nodeStruct.i_codeCommand),
+                                    PLCGlobals.INFO)
             mesPacked.setCommandNodeStruct(mesPacked.CODE_STOP)
             stdout.write(nodeStruct.o_obj.b_message)
             mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
@@ -177,5 +185,6 @@ def run_parser(stdin, stdout):
             # последнаая ответка после чего завершаем сеанс, закываем поток
             # stdout.write(nodeStruct.o_obj.b_message)
             # mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.INFO)
+
 
 main()
