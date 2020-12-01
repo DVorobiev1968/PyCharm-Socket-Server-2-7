@@ -31,7 +31,9 @@ class MesPacked():
     def __init__(self):
         self.code_status=0
         self.errMessage=str("")
-        # коды ошибок и их описание
+        # коды i_code_answer и их описание
+        self.SEARCH_FAIL = 78
+        self.SEARCH_OK = 79
         self.OK = 80
         self.ERR = 99
         self.SYNTAX_ERR = 101
@@ -40,6 +42,7 @@ class MesPacked():
         self.CODE_STOP = 2
         self.CODE_SINGLE_START = 3
         self.CODE_LIST_NODES = 10
+        self.CODE_FIND_NODES = 11
         self.CODE_EXIT = 20
         self.CODE_EXIT_SERVER = 21
         # сетевые настройки
@@ -61,8 +64,11 @@ class MesPacked():
             self.CODE_STOP: "Stop command",
             self.CODE_SINGLE_START: "Single start command",
             self.CODE_LIST_NODES: "Printing nodes list",
+            self.CODE_FIND_NODES: "Search nodes and objext",
             self.CODE_EXIT: "Close connect Client stopped",
             self.CODE_EXIT_SERVER: "Close connect Server stopped",
+            self.SEARCH_OK: "Node and object found OK",
+            self.SEARCH_FAIL: "Node and object not found",
             self.ERR: "General error",
             100: "Request not supported.",
             self.SYNTAX_ERR: "Syntax error.",
@@ -157,16 +163,19 @@ class MesPacked():
         nodeStruct.o_obj.d_value=d_value
         return nodeStruct
 
-    def setCommandNodeStruct(self, i_command, id_node=0, idObj=0, idSubObj=0, d_value=0):
+    def setCommandNodeStruct(self, i_command,i_code_answer=0, id_node=0, idObj=0, idSubObj=0, d_value=0):
         """
         метод для отладки инициализирует переменную
         содержащую структуру узла, с описанием объектов
         внутри применяется только для отладки, в рабочем режиме
         nodeStruct заполняется при получении данных от клиента
-        :param id_node:
-        :param idObj:
-        :param idSubObj:
-        :param d_value:
+        :param i_command: код команды
+        :param i_code_answer: код ответа на команду (статут)
+        :param id_node: идентификатор узла
+        :param idObj: идентификатор объекта
+        :param idSubObj: идентификатор субобъекта
+        :param d_value: значение
+
         :return: объект типа nodeStruct
         """
         nodeStruct = NodeInfo()  # переменная узел
@@ -178,7 +187,10 @@ class MesPacked():
         # строка получаемая из буфера
         nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
         # статус ответа OK
-        nodeStruct.i_code_answer=self.OK
+        if (i_code_answer==0):
+            nodeStruct.i_code_answer=self.OK
+        else:
+            nodeStruct.i_code_answer=i_code_answer
 
         nodeStruct.o_obj.h_idObj=0x0+idObj
         nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
@@ -267,16 +279,19 @@ class MesPacked():
         :nodeStruct: объект nodeStruct
         :return: код ошибки, обработанный объект nodeStruct
         """
-        i_status = self.OK
-        parse_str = re.split("[;\r\n]", data)
-        i_data = len(data)
-        nodeStruct=self.readData(parse_str, nodeStruct)
-        nodeStruct.s_message = "{0}:{1:d}:{2}".format(object.__name__, nodeStruct.o_obj.i_check, parse_str)
-        self.print_message(nodeStruct.s_message, PLCGlobals.INFO)
-        i_status, \
-        i_length, \
-        nodeStruct = self.sendMessage(i_data, nodeStruct)
-        return i_status, nodeStruct
+        if len(data)>1:
+            i_status = self.OK
+            parse_str = re.split("[;\r\n]", data)
+            i_data = len(data)
+            nodeStruct=self.readData(parse_str, nodeStruct)
+            nodeStruct.s_message = "{0}:{1:d}:{2}".format(object.__name__, nodeStruct.o_obj.i_check, parse_str)
+            self.print_message(nodeStruct.s_message, PLCGlobals.INFO)
+            i_status, \
+            i_length, \
+            nodeStruct = self.sendMessage(i_data, nodeStruct)
+            return i_status, nodeStruct
+        else:
+            return self.SEARCH_FAIL, NodeInfo()
 
     def recvMessageNode(self, data):
         """
@@ -284,19 +299,22 @@ class MesPacked():
         :param data: байтовая строка
         :return: код ошибки, nodeStruct
         """
-        i_status = self.OK
-        parse_str = re.split("[;\r\n]", data)
-        i_data = len(data)
-        nodeStruct=self.readDataNodeStruct(parse_str)
-        self.errMessage = "{0}:{1:d}:{2}".format(object.__name__,
-                                                      nodeStruct.o_obj.i_check,
-                                                      parse_str)
-        self.print_message(self.errMessage, PLCGlobals.INFO)
-        i_status, \
-        i_length, \
-        self.nodeStruct = self.sendMessage(i_data,nodeStruct)
+        if len(data)>1:
+            i_status = self.OK
+            parse_str = re.split("[;\r\n]", data)
+            i_data = len(data)
+            nodeStruct=self.readDataNodeStruct(parse_str)
+            self.errMessage = "{0}:{1:d}:{2}".format(object.__name__,
+                                                          nodeStruct.o_obj.i_check,
+                                                          parse_str)
+            self.print_message(self.errMessage, PLCGlobals.INFO)
+            i_status, \
+            i_length, \
+            self.nodeStruct = self.sendMessage(i_data,nodeStruct)
 
-        return i_status, nodeStruct
+            return i_status, nodeStruct
+        else:
+            return self.SEARCH_FAIL, NodeInfo()
 
     def setValue(self, strValue, nodeStruct):
         """

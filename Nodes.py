@@ -7,6 +7,9 @@ from MesPacked import MesPacked
 class Nodes():
     errMessage= ""
     mesPacked=MesPacked()
+    # коды ошибок возвращаемые методами классов, не совпадает с i_code_answer
+    FIND_NODE_ERR = -1
+    FIND_OBJ_ERR = -1
 
     def __init__(self):
         key_obj = ['h_idObj',
@@ -133,13 +136,6 @@ class Nodes():
             self.add_item_objs(self.dict_objs)
         return i_status
 
-    def find_obj(self, id_obj):
-        length = len(self.list_objs)
-        for i in range(length):
-            if self.list_objs[i]["h_idObj"]==id_obj:
-                return True, self.list_objs[i]
-        return False, None
-
     def print_dict_objs(self):
         self.mesPacked.print_message(self.dict_objs,PLCGlobals.INFO)
 
@@ -246,8 +242,32 @@ class Nodes():
         length = len(self.list_nodes)
         for i in range(length):
             if self.list_nodes[i]["i_idNode"]==id_node:
-                return True, self.list_nodes[i]
-        return False, None
+                return i, self.list_nodes[i]["Objs"]
+        return self.FIND_NODE_ERR, None
+
+    def find_obj(self, id_obj, objs):
+        length = len(objs)
+        for i in range(length):
+            if objs[i]["h_idObj"]==id_obj:
+                return i
+        return self.FIND_OBJ_ERR
+
+    def find_node_obj(self, id_node, id_obj):
+        """
+        метод ищет в хранилище данных данные по идентификатору узла и объекта
+        возвращает индекс узла в списке узлов, а также индекс найденной объекта
+        в списке объектов
+        :param id_node:
+        :param id_obj:
+        :return: i, i_obj:  индекс узла, индек объекта
+        """
+        i, objs = self.find_node(id_node)
+        if i!=self.FIND_NODE_ERR:
+            i_obj=self.find_obj(id_obj,objs)
+            return  i, i_obj
+        else:
+            return i, self.FIND_NODE_ERR
+
 
     def print_dict_nodes(self):
         self.mesPacked.print_message(self.dict_nodes,PLCGlobals.INFO)
@@ -293,14 +313,12 @@ if __name__ == '__main__':
         nodes.set_val(i,"s_message",nodes.mesPacked.dict_classif[nodes.mesPacked.OK])
         nodes.set_val(i,"Objs",loadObjs(i,nodes))
 
-    # id_node=7
-    # id_nodeObj=0x1000+5
-    # b_status, list_nodes=nodes.find_node(id_node)
-    # if (b_status):
-    #     b_status_obj, list_objs=list_nodes['Obj'].find_obj(id_nodeObj)
-    #     if (b_status_obj):
-    #         print list_objs
-    #
+    id_node=7
+    id_nodeObj=0x1000+5
+    i, i_obj=nodes.find_node_obj(id_node,id_nodeObj)
+    if (i!=nodes.FIND_NODE_ERR and
+        i_obj!=nodes.FIND_OBJ_ERR):
+        nodes.mesPacked.print_message(nodes.list_nodes[i]["Objs"][i_obj], PLCGlobals.INFO)
 
-    nodes.print_list_nodes()
+    # nodes.print_list_nodes()
 

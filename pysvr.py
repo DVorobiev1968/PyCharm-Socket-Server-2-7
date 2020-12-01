@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys, string, getopt, thread, socket
+from threading import Lock
+
 from MesPacked import MesPacked, NodeInfo
 from PLCGlobals import PLCGlobals
 from Nodes import Nodes
@@ -21,10 +23,12 @@ def loadSettings(key, mesPacked):
 
 # global mesPacked, nodes
 def main():
-    global mesPacked, nodes, i_commandCode
+    global mesPacked, nodes, i_commandCode, lock, conn
     mesPacked = MesPacked()
     nodes = Nodes()
+    lock=Lock()
     i_commandCode=1
+    conn=None
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "")
@@ -55,7 +59,7 @@ def usage(msg=None):
     sys.exit(2)
 
 def main_thread(host, port):
-    global mesPacked, i_commandCode
+    global mesPacked, i_commandCode, lock, conn
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     sock.bind((host, port))
@@ -75,9 +79,10 @@ def main_thread(host, port):
                                 format(i_commandCode),
                                 PLCGlobals.INFO)
 
+        lock.acquire()
         if i_commandCode==mesPacked.CODE_EXIT_SERVER:
-            del conn, addr
             break
+        lock.release()
         del conn, addr
 
 
@@ -94,10 +99,9 @@ def service_thread(conn, addr):
     run_parser(stdin, stdout)
     mesPacked.print_message("Thread {0:s} is done. i_codeCommand {1}.".
                             format(str(thread.get_ident()),i_commandCode), PLCGlobals.INFO)
-    if i_commandCode == mesPacked.CODE_EXIT_SERVER:
-        del conn, addr
-        mesPacked.print_message("sys.exit(0)", PLCGlobals.INFO)
-        exit(0)
+    # if i_commandCode == mesPacked.CODE_EXIT_SERVER:
+    #     del conn, addr
+    #     mesPacked.print_message("sys.exit(0)", PLCGlobals.INFO)
 
 
 def run_interpreter(stdin, stdout):
@@ -155,7 +159,7 @@ def run_parser(stdin, stdout):
     :param stdout:
     :return:
     """
-    global i_commandCode
+    global i_commandCode, lock, conn
 
     data = stdin.readline()
     nodeStruct = NodeInfo()
@@ -170,7 +174,7 @@ def run_parser(stdin, stdout):
                 i_status, nodeStruct = mesPacked.recvMessageNode(data)
             else:
                 pass
-        if nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START:
+        elif nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START:
             save_node(i_status, nodeStruct)
             nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
             if i_status == mesPacked.OK:
@@ -178,7 +182,7 @@ def run_parser(stdin, stdout):
                 mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
             else:
                 pass
-
+            break
         elif nodeStruct.i_codeCommand == mesPacked.CODE_LIST_NODES:
             mesPacked.print_message("Start listing nodes, recieve code:{0}...".format(nodeStruct.i_codeCommand),
                                     PLCGlobals.INFO)
@@ -197,19 +201,40 @@ def run_parser(stdin, stdout):
             stdout.write(nodeStruct.o_obj.b_message)
             mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
             break
+        elif nodeStruct.i_codeCommand == mesPacked.CODE_FIND_NODES:
+            mesPacked.print_message("Search id_Node:{0}, id_Obj:{1:d}({1:4X})".
+                                    format(nodeStruct.i_idNode,
+                                           nodeStruct.o_obj.h_idObj), PLCGlobals.INFO)
+            i_node, i_obj=nodes.find_node_obj(nodeStruct.i_idNode,nodeStruct.o_obj.h_idObj)
+            if (i_node != nodes.FIND_NODE_ERR and
+                    i_obj != nodes.FIND_OBJ_ERR):
+                nodeStruct=mesPacked.setCommandNodeStruct(nodes.list_nodes[i_node]["i_codeCommand"],
+                                               mesPacked.SEARCH_OK,
+                                               nodes.list_nodes[i_node]["i_idNode"],
+                                               nodes.list_nodes[i_node]["Objs"][i_obj]["h_idObj"],
+                                               nodes.list_nodes[i_node]["Objs"][i_obj]["h_idSubObj"],
+                                               nodes.list_nodes[i_node]["Objs"][i_obj]["d_value"])
+                i_length, nodeStruct=mesPacked.setB_message(nodes.list_nodes[i_node]["i_codeCommand"],nodeStruct)
+            else:
+                mesPacked.setCommandNodeStruct(mesPacked.CODE_FIND_NODES,mesPacked.SEARCH_FAIL)
+
+            stdout.write(nodeStruct.o_obj.b_message)
+            mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
+            break
         elif nodeStruct.i_codeCommand == mesPacked.CODE_EXIT_SERVER:
             mesPacked.print_message("Stop servers, recieve code:{0}...".format(nodeStruct.i_codeCommand),
                                     PLCGlobals.INFO)
             mesPacked.nodeStruct.i_codeCommand=mesPacked.CODE_EXIT_SERVER;
+            lock.acquire()
             i_commandCode=mesPacked.CODE_EXIT_SERVER
+            conn.close()
+            lock.release()
             break
-            exit(0)
+            # exit(0)
         else:
-            pass
-
-            # последнаая ответка после чего завершаем сеанс, закываем поток
-            # stdout.write(nodeStruct.o_obj.b_message)
-            # mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.INFO)
+            mesPacked.print_message("Else, recieve code:{0}...".format(nodeStruct.i_codeCommand),
+                                    PLCGlobals.INFO)
+            break
 
 
 main()
