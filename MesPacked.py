@@ -2,6 +2,8 @@
 
 import re, random, sys, pickle
 
+from numpy.core import double
+
 from switch import switch
 from PLCGlobals import PLCGlobals
 
@@ -173,7 +175,7 @@ class MesPacked():
         nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
         nodeStruct.o_obj.h_idObj=0x0+idObj
         nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
-        nodeStruct.o_obj.i_typeData=self.dict_typeData["Float"]
+        nodeStruct.o_obj.i_typeData=self.dict_typeData["Double"]
         nodeStruct.o_obj.d_value=d_value
         return nodeStruct
 
@@ -208,7 +210,7 @@ class MesPacked():
 
         nodeStruct.o_obj.h_idObj=0x0+idObj
         nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
-        nodeStruct.o_obj.i_typeData=self.dict_typeData["Float"]
+        nodeStruct.o_obj.i_typeData=self.dict_typeData["Double"]
         nodeStruct.o_obj.d_value=d_value
         return nodeStruct
 
@@ -350,8 +352,8 @@ class MesPacked():
             nodeStruct.o_obj.i_typeData = self.dict_typeData["Dict"]
             nodeStruct.o_obj.d_value = dict()
         elif isinstance(strValue, str):
-            nodeStruct.o_obj.i_typeData = self.dict_typeData["Float"]
-            nodeStruct.o_obj.d_value = float(strValue.replace(',', '.'))
+            nodeStruct.o_obj.i_typeData = self.dict_typeData["Double"]
+            nodeStruct.o_obj.d_value = double(strValue.replace(',', '.'))
         else:
             nodeStruct.o_obj.i_typeData = self.dict_typeData["Object"]
             nodeStruct.o_obj.d_value = bytearray(strValue, "utf-8")
@@ -379,8 +381,8 @@ class MesPacked():
             i_typeData = self.dict_typeData["Dict"]
             d_value = dict()
         elif isinstance(strValue, str):
-            i_typeData = self.dict_typeData["Float"]
-            d_value = float(strValue.replace(',', '.'))
+            i_typeData = self.dict_typeData["Double"]
+            d_value = double(strValue.replace(',', '.'))
         else:
             i_typeData = self.dict_typeData["Object"]
             d_value = bytearray(strValue, "utf-8")
@@ -432,7 +434,7 @@ class MesPacked():
                 if case(6):
                     nodeStruct=self.setValue(stringData[i],nodeStruct)
                     # для отладки после убрать, поскольку запускаем без параметр, будет проставляться random()
-                    nodeStruct=self.setD_value(nodeStruct)
+                    # nodeStruct=self.setD_value(nodeStruct)
                     break
                 if case(length - 3):
                     nodeStruct.o_obj.i_check = int(stringData[i])

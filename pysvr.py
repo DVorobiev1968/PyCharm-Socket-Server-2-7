@@ -112,18 +112,6 @@ def run_interpreter(stdin, stdout):
     mesPacked.print_message("b_message:{0}".format(mesPacked.nodeStruct.o_obj.b_message), PLCGlobals.INFO)
 
 
-def loadObjs_old(nodeStruct):
-    """
-    Функция сохранения объекта в узле в краткосрочном хранилище
-    :param nodeStruct:
-    :return:
-    """
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "h_idObj", nodeStruct.o_obj.h_idObj)
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "h_idSubObj", nodeStruct.o_obj.h_idSubObj)
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "i_typeData", nodeStruct.o_obj.i_typeData)
-    nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "d_value", nodeStruct.o_obj.d_value)
-    return nodes.list_objs
-
 def loadObjs(index_node, nodes, nodeStruct):
     """
     Функция сохранения объекта в узле в краткосрочном хранилище
