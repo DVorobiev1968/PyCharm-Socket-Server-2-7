@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import copy, random
+
+from numpy.core import double
+
 from switch import switch
 from PLCGlobals import PLCGlobals
 from MesPacked import MesPacked
@@ -90,7 +93,7 @@ class Nodes():
                         break
                     if case("d_value"):
                         result = float(self.list_objs[i].get(name_field))
-                        typeVal=self.mesPacked.dict_typeData["Float"]
+                        typeVal=self.mesPacked.dict_typeData["Double"]
                         break
                     if case("b_message"):
                         result = bytes(self.list_objs[i].get(name_field))
@@ -160,7 +163,7 @@ class Nodes():
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case("d_value"):
-                        list_objs[i]["d_value"] = float(value)
+                        list_objs[i]["d_value"] = double(value)
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case("b_message"):
@@ -241,6 +244,7 @@ class Nodes():
                         break
                     if case():
                         result = self.list_nodes[i].get(name_field)
+                        break
         if (result==None and typeVal==self.mesPacked.dict_typeData["None"]):
             self.messageErr="nodes.get_val:".format(result,typeVal)
             self.mesPacked.print_message(self.messageErr,PLCGlobals.INFO)
@@ -337,7 +341,7 @@ class Nodes():
             for j in range(len_objs):
                 str_node_info="h_idObj:{0:d}({0:X});" \
                     "h_idSubObj:{1:d}({1:X});" \
-                    "d_value:{2:f};" \
+                    "d_value:{2:4.6f};" \
                     "i_typeData:{3:d};" \
                     "b_message:{4:<10s}".format(
                     self.list_nodes[i]["Objs"][j]['h_idObj'],
