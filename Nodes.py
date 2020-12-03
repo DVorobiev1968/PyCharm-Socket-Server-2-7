@@ -341,7 +341,7 @@ class Nodes():
             for j in range(len_objs):
                 str_node_info="h_idObj:{0:d}({0:X});" \
                     "h_idSubObj:{1:d}({1:X});" \
-                    "d_value:{2:4.6f};" \
+                    "d_value:{2:4.10f};" \
                     "i_typeData:{3:d};" \
                     "b_message:{4:<10s}".format(
                     self.list_nodes[i]["Objs"][j]['h_idObj'],
