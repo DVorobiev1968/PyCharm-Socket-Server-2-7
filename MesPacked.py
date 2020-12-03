@@ -32,6 +32,13 @@ class MesPacked():
         self.code_status=0
         self.errMessage=str("")
         # коды i_code_answer и их описание
+        self.CODE_NODES_OPERATION = 60
+        self.ADD_OK = self.CODE_NODES_OPERATION+PLCGlobals.ADD_OK
+        self.ADD_FAIL = self.CODE_NODES_OPERATION+PLCGlobals.ADD_FAIL
+        self.UPDATE_OK = self.CODE_NODES_OPERATION+PLCGlobals.UPDATE_OK
+        self.UPDATE_FAIL = self.CODE_NODES_OPERATION+PLCGlobals.UPDATE_FAIL
+        self.SET_VAL_OK = self.CODE_NODES_OPERATION+PLCGlobals.SET_VAL_OK
+        self.SET_VAL_FAIL = self.CODE_NODES_OPERATION+PLCGlobals.SET_VAL_FAIL
         self.SEARCH_FAIL = 78
         self.SEARCH_OK = 79
         self.OK = 80
@@ -67,8 +74,15 @@ class MesPacked():
             self.CODE_FIND_NODES: "Search nodes and objext",
             self.CODE_EXIT: "Close connect Client stopped",
             self.CODE_EXIT_SERVER: "Close connect Server stopped",
+            self.CODE_NODES_OPERATION: "Codes Error/Info for node and object",
             self.SEARCH_OK: "Node and object found OK",
             self.SEARCH_FAIL: "Node and object not found",
+            self.ADD_OK: "Add list_node/list_obj it`s OK",
+            self.ADD_FAIL: "Add list_node/list_obj it`s FAIL",
+            self.UPDATE_OK: "Update list_node/list_obj  it`s OK",
+            self.UPDATE_FAIL: "Update list_node/list_obj it`s FAIL",
+            self.SET_VAL_OK: "Set list_node/list_obj it`s OK",
+            self.SET_VAL_FAIL:"Set list_node/list_obj it`s FAIL",
             self.ERR: "General error",
             100: "Request not supported.",
             self.SYNTAX_ERR: "Syntax error.",

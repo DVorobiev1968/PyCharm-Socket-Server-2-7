@@ -112,7 +112,7 @@ def run_interpreter(stdin, stdout):
     mesPacked.print_message("b_message:{0}".format(mesPacked.nodeStruct.o_obj.b_message), PLCGlobals.INFO)
 
 
-def loadObjs(nodeStruct):
+def loadObjs_old(nodeStruct):
     """
     Функция сохранения объекта в узле в краткосрочном хранилище
     :param nodeStruct:
@@ -124,6 +124,17 @@ def loadObjs(nodeStruct):
     nodes.set_val_obj(nodeStruct.o_obj.h_idObj, "d_value", nodeStruct.o_obj.d_value)
     return nodes.list_objs
 
+def loadObjs(index_node, nodes, nodeStruct):
+    """
+    Функция сохранения объекта в узле в краткосрочном хранилище
+    :param: index_node: индекс в списке узлов
+    :param: nodes: объект - класс узел
+    :param: nodeStruct: объект - класс узел, промежуточный для межсетевого обмена
+    :rtype: список: list_nodes
+    """
+    i_status, list_obj=nodes.set_val_obj(nodes.list_nodes[index_node]['Objs'], nodeStruct)
+
+    return list_obj
 
 def set_nodes(i_status, nodeStruct):
     """
@@ -132,12 +143,16 @@ def set_nodes(i_status, nodeStruct):
     :return:
     """
     # global nodes
-    i_append = nodes.set_val(nodeStruct.i_idNode, "i_idNode", nodeStruct.i_idNode)
+    i_status, index = nodes.set_val(nodeStruct.i_idNode, "i_idNode", nodeStruct.i_idNode)
+    i_status+=nodes.mesPacked.CODE_NODES_OPERATION
     nodes.set_val(nodeStruct.i_idNode, "i_code_answer", i_status)
     nodes.set_val(nodeStruct.i_idNode, "i_codeCommand", nodeStruct.i_codeCommand)
     nodes.set_val(nodeStruct.i_idNode, "s_command", nodes.mesPacked.dict_classif[nodeStruct.i_codeCommand])
     nodes.set_val(nodeStruct.i_idNode, "s_message", nodes.mesPacked.dict_classif[i_status])
-    nodes.set_val(nodeStruct.i_idNode, "Objs", loadObjs(nodeStruct))
+    if i_status == PLCGlobals.ADD_OK or i_status==nodes.mesPacked.ADD_OK or \
+        i_status == PLCGlobals.UPDATE_OK or i_status==nodes.mesPacked.UPDATE_OK:
+        index = len(nodes.list_nodes) - 1
+        nodes.set_val(nodeStruct.i_idNode, "Objs", loadObjs(index,nodes,nodeStruct))
 
 
 def save_node(i_status, nodeStruct):
