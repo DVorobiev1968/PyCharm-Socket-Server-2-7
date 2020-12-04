@@ -64,7 +64,7 @@ def main_thread(host, port):
 
     sock.bind((host, port))
     sock.listen(5)
-    PLCGlobals.debug=PLCGlobals.WARNING
+    # PLCGlobals.debug=PLCGlobals.WARNING
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.WARNING)
 
     while 1:
@@ -96,14 +96,9 @@ def service_thread(conn, addr):
                             PLCGlobals.WARNING)
     stdin = conn.makefile("r")
     stdout = conn.makefile("w", 0)
-    # run_interpreter(stdin, stdout)
     run_parser(stdin, stdout)
     mesPacked.print_message("Thread {0:s} is done. i_codeCommand {1}.".
                             format(str(thread.get_ident()),i_commandCode), PLCGlobals.WARNING)
-    # if i_commandCode == mesPacked.CODE_EXIT_SERVER:
-    #     del conn, addr
-    #     mesPacked.print_message("sys.exit(0)", PLCGlobals.INFO)
-
 
 def run_interpreter(stdin, stdout):
     # global mesPacked

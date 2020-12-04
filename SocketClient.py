@@ -27,8 +27,72 @@ def usage(msg=None):
     print "\n", __doc__,
     sys.exit(2)
 
-def load_socket_node(host, port, id_Node, id_Obj, idSubObj=0):
+def set_socket_node(id_Node, id_Obj, i_command, d_value=0, idSubObj=0, host="", port=0):
+    """
+    функция отправляет на сервер телеграмму с необходимой командой
+    :param id_Node: идентификатор узла
+    :param id_Obj: идентификатор объекта
+    :param i_command: код команды
+    :param d_value: значение для записи
+    :param idSubObj: идентификатор субобъекта, по умолчанию
+    :param host: задаем пустую строку, чтобы использовать значение по умолчанию localhost
+    :param port: задаем 0, чтобы использовать значение по умолчанию 8889
+    :return:
+    """
     global mesPacked
+    if len(host)<1:
+        host = loadSettings(1, mesPacked)
+    if port<1:
+        port = loadSettings(2, mesPacked)
+
+    # Create a socket (SOCK_STREAM means a TCP socket)
+    sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    nodeStruct = NodeInfo()
+    i_code_answer=0
+    nodeStruct.i_idNode=id_Node
+    nodeStruct.i_code_answer=i_code_answer
+    nodeStruct.i_codeCommand=i_command
+    nodeStruct.s_command=mesPacked.dict_classif[i_command]
+    nodeStruct.s_message=mesPacked.dict_classif[i_code_answer]
+    nodeStruct.o_obj.h_idObj=0x0+id_Obj
+    nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
+    nodeStruct.o_obj.d_value=d_value
+    mesPacked.setB_message(0,nodeStruct)
+    # Connect to server and send data
+    sock.connect((host, port))
+    sock.sendall(bytes(nodeStruct.o_obj.b_message))
+    mesPacked.print_message("sendall: b_message:{0}".
+                            format(nodeStruct.o_obj.b_message),
+                            PLCGlobals.INFO)
+
+    # Receive data from the server and shut down
+    s_received = str(sock.recv(1024))
+    i_status, nodeStruct = mesPacked.recvMessageNode(s_received)
+    if (i_status==mesPacked.SEARCH_FAIL):
+        err_msg="Error:{0}(1:<20s)".format(i_status,mesPacked.errMessage(i_status))
+        mesPacked.print_message(err_msg,PLCGlobals.ERROR)
+    else:
+        b_message="recvMessageNodes: b_message:{0}".format(nodeStruct.o_obj.b_message)
+        mesPacked.print_message(b_message,PLCGlobals.INFO)
+    sock.close()
+
+
+def load_socket_node(id_Node, id_Obj, idSubObj=0, host="", port=0):
+    """
+    функция отправляет на сервер телеграмму с необходимой командой
+    :param id_Node: идентификатор узла
+    :param id_Obj: идентификатор объекта
+    :param idSubObj: идентификатор субобъекта, по умолчанию 0
+    :param host: задаем пустую строку, чтобы использовать значение по умолчанию localhost
+    :param port: задаем 0, чтобы использовать значение по умолчанию 8889
+    :return:
+    """
+    global mesPacked
+
+    if len(host)<1:
+        host = loadSettings(1, mesPacked)
+    if port<1:
+        port = loadSettings(2, mesPacked)
     # Create a socket (SOCK_STREAM means a TCP socket)
     sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     nodeStruct = NodeInfo()
@@ -52,13 +116,15 @@ def load_socket_node(host, port, id_Node, id_Obj, idSubObj=0):
     s_received = str(sock.recv(1024))
     i_status, nodeStruct = mesPacked.recvMessageNode(s_received)
     if (i_status!=mesPacked.SEARCH_FAIL):
-        mesPacked.print_message("recvMessageNodes: b_message:{0}".
-                            format(nodeStruct.o_obj.b_message),
-                            PLCGlobals.INFO)
+        b_message="loadSocketNode:{0}".format(nodeStruct.o_obj.b_message)
+        mesPacked.print_message(b_message,PLCGlobals.INFO)
+        d_value=nodeStruct.o_obj.d_value
     else:
-        mesPacked.print_message("recvMessageNodes: b_message:empty",
-                            PLCGlobals.INFO)
+        err_message="Err:{0}({1:<20s})".format(i_status,mesPacked.dict_classif[i_status])
+        mesPacked.print_message(err_message,PLCGlobals.INFO)
+        d_value=0.0
     sock.close()
+    return d_value
 
 ##############################################################
 def main():
@@ -85,6 +151,8 @@ def main():
         host = loadSettings(1, mesPacked)
         port = loadSettings(2, mesPacked)
 
-    load_socket_node(host, port, 5, 0x1000+7)
+    d_value=load_socket_node(5, 0x1000+7)
+    mesPacked.print_message("d_value:{0:4.10f}".format(d_value), PLCGlobals.INFO)
+    set_socket_node(5,0x1000+8,mesPacked.CODE_SINGLE_START,1968)
 
 main()

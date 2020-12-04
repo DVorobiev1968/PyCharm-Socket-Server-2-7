@@ -6,28 +6,7 @@ from numpy.core import double
 
 from switch import switch
 from PLCGlobals import PLCGlobals
-
-class NodeObjInfo():
-    def __init__(self):
-        # атрибуты(св-ва) класса
-        self.h_idObj = 0x1         # идентификатор объекта
-        self.h_idSubObj = 0x100    # идентификатор субобъекта
-        self.i_typeData = 0        # тип данных объекта
-        self.d_value = 0.1         # возвращаемое значение
-        self.i_check = 0           # контрольная сумма
-        self.b_message = bytes()   # массив байт отправляемый клиенту
-        self.b_obj=bytes()         # дополнительный объект для сериализации
-
-class NodeInfo():
-    def __init__(self):
-        # атрибуты(св-ва) класса
-        self.i_idNode = 1       # идентификатор узла
-        self.i_code_answer = 0  # код ответа от узла
-        self.i_codeCommand = 0  # код команды присваивается в зависимости от протокола работы узла
-        self.s_command = ""     # описание команды
-        self.s_message = ""     # строка получаемая из буфера
-        self.list_obj=[]        # будет содержаться список NodeObjInfo
-        self.o_obj=NodeObjInfo()    # для nodeStruct
+from NodeInfo import NodeInfo
 
 class MesPacked():
     def __init__(self):
