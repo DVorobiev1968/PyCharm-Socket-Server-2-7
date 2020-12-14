@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from NodeObjInfo import NodeObjInfo
+from AlgoritmInfo import AlgoritmInfo
 
 class NodeInfo():
     """
@@ -19,5 +20,6 @@ class NodeInfo():
         self.i_codeCommand = 0
         self.s_command = ""
         self.s_message = ""
+        self.o_Algoritm=AlgoritmInfo()
         self.list_obj=[]
         self.o_obj=NodeObjInfo()

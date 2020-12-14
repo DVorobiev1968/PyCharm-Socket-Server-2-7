@@ -7,11 +7,18 @@ from numpy.core import double
 from switch import switch
 from PLCGlobals import PLCGlobals
 from NodeInfo import NodeInfo
+from AlgoritmInfo import AlgoritmInfo
 
 class MesPacked():
     def __init__(self):
         self.code_status=0
         self.errMessage=str("")
+        # коды блока готовности Алгоритмов и их описание
+        self.CODE_ALGORITM_OPERATION = 50
+        self.SET_ALGORITM_VAL_OK = self.CODE_ALGORITM_OPERATION+PLCGlobals.SET_VAL_OK
+        self.SET_ALGORITM_VAL_FAIL = self.CODE_ALGORITM_OPERATION+PLCGlobals.SET_VAL_FAIL
+        self.SET_ALGORITM_WAIT=self.CODE_ALGORITM_OPERATION+PLCGlobals.UPDATE_FAIL
+
         # коды i_code_answer и их описание
         self.CODE_NODES_OPERATION = 60
         self.ADD_OK = self.CODE_NODES_OPERATION+PLCGlobals.ADD_OK
@@ -31,6 +38,8 @@ class MesPacked():
         self.CODE_SINGLE_START = 3
         self.CODE_LIST_NODES = 10
         self.CODE_FIND_NODES = 11
+        self.CODE_LOAD_FOR_ALGORITM = 12
+        self.CODE_SAVE_FOR_ALGORITM = 13
         self.CODE_EXIT = 20
         self.CODE_EXIT_SERVER = 21
         # сетевые настройки
@@ -53,6 +62,8 @@ class MesPacked():
             self.CODE_SINGLE_START: "Single start command",
             self.CODE_LIST_NODES: "Printing nodes list",
             self.CODE_FIND_NODES: "Search nodes and objext",
+            self.CODE_LOAD_FOR_ALGORITM: "Search nodes and objext and load data of node for Algoritm",
+            self.CODE_SAVE_FOR_ALGORITM: "Save data from Algoritm",
             self.CODE_EXIT: "Close connect Client stopped",
             self.CODE_EXIT_SERVER: "Close connect Server stopped",
             self.CODE_NODES_OPERATION: "Codes Error/Info for node and object",
@@ -156,7 +167,27 @@ class MesPacked():
         nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
         nodeStruct.o_obj.i_typeData=self.dict_typeData["Double"]
         nodeStruct.o_obj.d_value=d_value
+        nodeStruct.o_Algoritm.__init__(self)
+        nodeStruct.o_Algoritm.status=self.SET_ALGORITM_VAL_FAIL
         return nodeStruct
+
+    def setAlgoritmStruct(self,i_command, i_code_answer=0):
+        """
+         метод инициализирует переменную
+         содержащую структуру Алгоритма
+         :param i_command: код команды
+         :param i_code_answer: код ответа на команду (статуc), параметр опциональный
+         :return: объект типа AlgoritmInfo
+         """
+        algoritmInfo=AlgoritmInfo()
+        if i_command==self.CODE_LOAD_FOR_ALGORITM:
+            algoritmInfo.status=self.SET_ALGORITM_WAIT
+        elif i_command==self.CODE_SAVE_FOR_ALGORITM:
+            algoritmInfo.status = self.SET_ALGORITM_VAL_OK
+        else:
+            algoritmInfo.status = self.SET_ALGORITM_VAL_FAIL
+        return algoritmInfo
+
 
     def setCommandNodeStruct(self, i_command,i_code_answer=0, id_node=0, idObj=0, idSubObj=0, d_value=0):
         """
@@ -191,6 +222,7 @@ class MesPacked():
         nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
         nodeStruct.o_obj.i_typeData=self.dict_typeData["Double"]
         nodeStruct.o_obj.d_value=d_value
+        nodeStruct.o_Algoritm=self.setAlgoritmStruct(i_command)
         return nodeStruct
 
     def setB_message(self, code_err=0, nodeStruct=NodeInfo()):

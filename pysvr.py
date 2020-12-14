@@ -63,8 +63,8 @@ def main_thread(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     sock.bind((host, port))
-    sock.listen(5)
-    # PLCGlobals.debug=PLCGlobals.WARNING
+    sock.listen(2)
+    PLCGlobals.debug=PLCGlobals.WARNING
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.WARNING)
 
     while 1:
