@@ -83,11 +83,11 @@ def load_for_algoritm(id_Node, id_Obj, idSubObj=0, host="", port=0):
         port = loadSettings(2, mesPacked)
     sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     nodeStruct = NodeInfo()
-    i_code_answer=0
+    i_code_answer=mesPacked.SET_ALGORITM_WAIT
     nodeStruct.i_idNode=id_Node
     nodeStruct.i_code_answer=i_code_answer
-    nodeStruct.i_codeCommand=mesPacked.CODE_FIND_NODES
-    nodeStruct.s_command=mesPacked.dict_classif[mesPacked.CODE_FIND_NODES]
+    nodeStruct.i_codeCommand=mesPacked.CODE_LOAD_FOR_ALGORITM
+    nodeStruct.s_command=mesPacked.dict_classif[nodeStruct.i_codeCommand]
     nodeStruct.s_message=mesPacked.dict_classif[i_code_answer]
     nodeStruct.o_obj.h_idObj=0x0+id_Obj
     nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
@@ -167,8 +167,10 @@ def main():
     host = loadSettings(1, mesPacked)
     port = loadSettings(2, mesPacked)
 
-    d_value=load_socket_node(5, 0x1000+7)
+    d_value_1=load_for_algoritm(1, 0x1000+7)
+    d_value=load_socket_node(2, 0x1000+7)
     mesPacked.print_message("d_value:{0:4.10f}".format(d_value), PLCGlobals.INFO)
+    mesPacked.print_message("d_value_1:{0:4.10f}".format(d_value_1), PLCGlobals.INFO)
     set_socket_node(5,0x1000+8,mesPacked.CODE_SINGLE_START,1968)
 
 main()

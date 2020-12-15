@@ -6,6 +6,7 @@ from numpy.core import double
 from switch import switch
 from PLCGlobals import PLCGlobals
 from MesPacked import MesPacked
+from AlgoritmInfo import AlgoritmInfo
 
 class Nodes():
     errMessage= ""
@@ -29,19 +30,22 @@ class Nodes():
                  bytes()]
         self.dict_objs = dict(zip(key_obj, value_obj))
         self.list_objs = []
+        self.o_algoritm=AlgoritmInfo(self.mesPacked.SET_ALGORITM_VAL_FAIL)
 
         key = ['i_idNode',
                'i_code_answer',
                'i_codeCommand',
                's_command',
                's_message',
-               'Objs']
+               'Objs',
+               'Algoritm']
         value = [0,
                  0,
                  0,
                  "",
                  "",
-                 self.list_objs]
+                 self.list_objs,
+                 self.o_algoritm]
         self.dict_nodes = dict(zip(key, value))
         self.list_nodes = []
 
@@ -203,6 +207,7 @@ class Nodes():
     def add_item_nodes(self, item):
         length = len(self.list_nodes)
         self.add_item_dict('Objs',[])
+        self.add_item_dict('Algoritm',AlgoritmInfo(self.mesPacked.SET_ALGORITM_VAL_FAIL))
 
         i_status = PLCGlobals.UPDATE_FAIL
         if (length == 0):
@@ -242,6 +247,10 @@ class Nodes():
                         result = self.list_nodes[i].get(name_field)
                         typeVal=self.mesPacked.dict_typeData["Object"]
                         break
+                    if case("Algoritm"):
+                        result = self.list_nodes[i].get(name_field)
+                        typeVal=self.mesPacked.dict_typeData["Algoritm"]
+                        break
                     if case():
                         result = self.list_nodes[i].get(name_field)
                         break
@@ -277,6 +286,10 @@ class Nodes():
                         break
                     if case("Objs"):
                         self.list_nodes[i]["Objs"]=value
+                        i_status = PLCGlobals.SET_VAL_OK
+                        break
+                    if case("Algoritm"):
+                        self.list_nodes[i]["Algoritm"]=value
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case():
@@ -328,12 +341,14 @@ class Nodes():
             str_node_info="i_idNode:{0:d};i_code_answer:{1:d}({1:X});" \
                           "i_codeCommand:{2:d}({2:X});" \
                           "s_commans:{3:<20s};" \
-                          "s_message:{4:<20s}".format(
+                          "s_message:{4:<20s};" \
+                          "Algoritm:{5:<20s}".format(
                 self.list_nodes[i]['i_idNode'],
                 self.list_nodes[i]["i_code_answer"],
                 self.list_nodes[i]["i_codeCommand"],
                 self.list_nodes[i]["s_command"],
-                self.list_nodes[i]["s_message"])
+                self.list_nodes[i]["s_message"],
+                self.list_nodes[i]["Algoritm"],)
             self.mesPacked.print_message(str_node_info,PLCGlobals.INFO)
             len_objs=len(self.list_nodes[i]["Objs"])
             self.messageErr="Objs length:{0:3d} objs".format(len_objs)
@@ -381,6 +396,7 @@ if __name__ == '__main__':
         nodes.set_val(id_Node,"s_command",nodes.mesPacked.dict_classif[nodes.mesPacked.CODE_START])
         nodes.set_val(id_Node,"s_message",nodes.mesPacked.dict_classif[nodes.mesPacked.OK])
         nodes.set_val(id_Node,"Objs",loadObjs(i_index,nodes))
+        nodes.set_val(id_Node,"Algoritm",nodes.o_algoritm)
 
     id_node=7
     id_nodeObj=0x1000+5

@@ -36,6 +36,8 @@ class MesPacked():
         self.CODE_START = 1
         self.CODE_STOP = 2
         self.CODE_SINGLE_START = 3
+        self.CODE_SINGLE_START_SYNC = 4
+        self.CODE_SINGLE_START_ASYNC = 5
         self.CODE_LIST_NODES = 10
         self.CODE_FIND_NODES = 11
         self.CODE_LOAD_FOR_ALGORITM = 12
@@ -53,13 +55,16 @@ class MesPacked():
             "String": 4,
             "Dict": 5,
             "Bytes": 6,
-            "Object": 7
+            "Object": 7,
+            "Algoritm": 8
         }
         self.dict_classif = {
             self.OK: "Command completed completely",
             self.CODE_START: "Start command",
             self.CODE_STOP: "Stop command",
             self.CODE_SINGLE_START: "Single start command",
+            self.CODE_SINGLE_START_SYNC: "Single start command synchronisation with FB",
+            self.CODE_SINGLE_START_ASYNC: "Single start command no wait synchronisation with FB",
             self.CODE_LIST_NODES: "Printing nodes list",
             self.CODE_FIND_NODES: "Search nodes and objext",
             self.CODE_LOAD_FOR_ALGORITM: "Search nodes and objext and load data of node for Algoritm",
@@ -75,6 +80,10 @@ class MesPacked():
             self.UPDATE_FAIL: "Update list_node/list_obj it`s FAIL",
             self.SET_VAL_OK: "Set list_node/list_obj it`s OK",
             self.SET_VAL_FAIL:"Set list_node/list_obj it`s FAIL",
+            self.CODE_ALGORITM_OPERATION: "Codes Error/Info for Algoritm",
+            self.SET_ALGORITM_VAL_OK: "Algoritm calculate completed",
+            self.SET_ALGORITM_VAL_FAIL: "Algoritm calculate it`s fail",
+            self.SET_ALGORITM_WAIT: "Wait for Algoritm calculated...",
             self.ERR: "General error",
             100: "Request not supported.",
             self.SYNTAX_ERR: "Syntax error.",
