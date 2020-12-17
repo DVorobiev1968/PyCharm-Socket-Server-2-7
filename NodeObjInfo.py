@@ -8,7 +8,8 @@ class NodeObjInfo():
         :param: i_typeData = 0        тип данных объекта
         :param: d_value = 0.1         возвращаемое значение
         :param: i_check = 0           контрольная сумма
-        :param: b_message = bytes()   массив байт отправляемый клиенту
+        :param: b_message = bytes()   массив байт принимаемый от клиента
+        :param: s_message = str()     строка с учетом кодировки отправляемая клиенту
         :param: b_obj=bytes()         дополнительный объект для сериализации
         """
         self.h_idObj = 0x1
@@ -17,4 +18,5 @@ class NodeObjInfo():
         self.d_value = 0.1
         self.i_check = 0
         self.b_message = bytes()
+        self.s_message = str()
         self.b_obj=bytes()

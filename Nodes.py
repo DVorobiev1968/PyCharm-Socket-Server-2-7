@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy, random
 
-from numpy.core import double
+from numpy import double
 
 from switch import switch
 from PLCGlobals import PLCGlobals

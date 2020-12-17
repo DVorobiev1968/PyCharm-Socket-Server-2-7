@@ -35,4 +35,4 @@ class PLCGlobals():
     debug = 1
     PORT = 8889
     host = "localhost"
-    PATH = "С:\\Users\User\\Beremiz\\beremiz_workdir\\"
+    PATH = "С:\\Users\\User\\Beremiz\\beremiz_workdir\\"

@@ -76,8 +76,8 @@ def main_thread(host, port):
             continue
         thread.start_new_thread(service_thread, (conn, addr))
 
-        mesPacked.print_message("Close thread, recieve code:{0}...".
-                                format(i_commandCode),
+        mesPacked.print_message("Close thread:{1}, recieve code:{0}...".
+                                format(i_commandCode,thread.get_ident()),
                                 PLCGlobals.INFO)
 
         lock.acquire()
@@ -85,6 +85,7 @@ def main_thread(host, port):
             break
         lock.release()
         del conn, addr
+        thread.exit()
 
 
 def service_thread(conn, addr):

@@ -149,7 +149,8 @@ class MesPacked():
 
     def print_message(self, messageErr, key):
         if PLCGlobals.debug <= key:
-            print '{:1d}:{:<40s}'.format(key,messageErr)
+            s_print="{0:1d}:{1:<40s}".format(key,messageErr)
+            print(s_print)
             sys.stdout.flush()
 
     def initNodeStruct(self, id_node, idObj, idSubObj, d_value):
@@ -246,17 +247,20 @@ class MesPacked():
         i_length = 0
         if code_err==0:
             code_err=nodeStruct.i_code_answer
-        nodeStruct.o_obj.b_message = bytes("{0};{1};{2};{3};{4};{5};{6}".format(
+
+        s_message = "{0};{1};{2};{3};{4};{5};{6}".format(
             nodeStruct.i_idNode,
             nodeStruct.i_codeCommand,
             code_err,
             nodeStruct.o_obj.h_idObj,
             nodeStruct.o_obj.h_idSubObj,
             nodeStruct.o_obj.i_typeData,
-            nodeStruct.o_obj.d_value))
-        i_length = len(nodeStruct.o_obj.b_message)
+            nodeStruct.o_obj.d_value)
+        i_length = len(s_message)
         i_length+=3+2
-        nodeStruct.o_obj.b_message = bytes("{0};{1}\r\n".format(nodeStruct.o_obj.b_message, i_length))
+        nodeStruct.o_obj.s_message = "{0};{1};\r\n".format(s_message, i_length)
+        nodeStruct.o_obj.b_message=bytes(s_message,'utf-8')
+        # nodeStruct.o_obj.s_message=str(nodeStruct.o_obj.b_message,'utf-8')
         nodeStruct.o_obj.b_obj=pickle.dumps(nodeStruct,0)
         i_length_obj=len(nodeStruct.o_obj.b_obj)
         return i_length,nodeStruct
@@ -267,9 +271,7 @@ class MesPacked():
         :param nodeStruct:
         :return:
         """
-        i_crc=0
-        for i in range (len(nodeStruct.o_obj.b_message)):
-            i_crc+=len(nodeStruct.o_obj.b_message[i])
+        i_crc=len(nodeStruct.o_obj.b_message)
         return i_crc
 
     def set_CRC_b_obj(self,nodeStruct):
@@ -278,9 +280,7 @@ class MesPacked():
         :param nodeStruct:
         :return:
         """
-        i_crc=0
-        for i in range (len(nodeStruct.o_obj.b_obj)):
-            i_crc+=len(nodeStruct.o_obj.b_obj[i])
+        i_crc=len(nodeStruct.o_obj.b_obj)
         return i_crc
 
     def sendMessage(self, i_data, nodeStruct):
@@ -317,7 +317,7 @@ class MesPacked():
         """
         if len(data)>1:
             i_status = self.OK
-            parse_str = re.split("[;\r\n]", data)
+            parse_str = re.split("[b';\r\n\s]", data)
             i_data = len(data)
             nodeStruct=self.readData(parse_str, nodeStruct)
             nodeStruct.s_message = "{0}:{1:d}:{2}".format(object.__name__, nodeStruct.o_obj.i_check, parse_str)
@@ -337,7 +337,7 @@ class MesPacked():
         """
         if len(data)>1:
             i_status = self.OK
-            parse_str = re.split("[;\r\n]", data)
+            parse_str = re.split("[b';\r\n]", data)
             i_data = len(data)
             nodeStruct=self.readDataNodeStruct(parse_str)
             self.errMessage = "{0}:{1:d}:{2}".format(object.__name__,
@@ -432,35 +432,38 @@ class MesPacked():
         :return: i_status, nodeStruct
         """
         length = len(stringData)
-        for i in range(length - 2):
-            for case in switch(i):
-                if case(0):
-                    nodeStruct.i_idNode = int(stringData[i])
-                    break
-                if case(1):
-                    nodeStruct.i_codeCommand = int(stringData[i])
-                    break
-                if case(2):
-                    nodeStruct.i_code_answer = int(stringData[i])
-                    break
-                if case(3):
-                    nodeStruct.o_obj.h_idObj = int(stringData[i])
-                    break
-                if case(4):
-                    nodeStruct.o_obj.h_idSubObj = int(stringData[i])
-                    break
-                if case(5):
-                    break
-                if case(6):
-                    nodeStruct=self.setValue(stringData[i],nodeStruct)
-                    # для отладки после убрать, поскольку запускаем без параметр, будет проставляться random()
-                    # nodeStruct=self.setD_value(nodeStruct)
-                    break
-                if case(length - 3):
-                    nodeStruct.o_obj.i_check = int(stringData[i])
-                    break
-                if case():
-                    break
+        index=0
+        for i in range(length):
+            if len(stringData[i]) > 0:
+                for case in switch(index):
+                    if case(0):
+                        nodeStruct.i_idNode = int(stringData[i])
+                        break
+                    if case(1):
+                        nodeStruct.i_codeCommand = int(stringData[i])
+                        break
+                    if case(2):
+                        nodeStruct.i_code_answer = int(stringData[i])
+                        break
+                    if case(3):
+                        nodeStruct.o_obj.h_idObj = int(stringData[i])
+                        break
+                    if case(4):
+                        nodeStruct.o_obj.h_idSubObj = int(stringData[i])
+                        break
+                    if case(5):
+                        break
+                    if case(6):
+                        nodeStruct=self.setValue(stringData[i],nodeStruct)
+                        # для отладки после убрать, поскольку запускаем без параметр, будет проставляться random()
+                        # nodeStruct=self.setD_value(nodeStruct)
+                        break
+                    if case(7):
+                        nodeStruct.o_obj.i_check = int(stringData[i])
+                        break
+                    if case():
+                        break
+                index+=1
         return nodeStruct
 
     def readDataNodeStruct(self, stringData):
@@ -473,33 +476,36 @@ class MesPacked():
         i_status = self.OK
         length = len(stringData)
         nodeStruct=NodeInfo()
-        for i in range(length - 2):
-            for case in switch(i):
-                if case(0):
-                    nodeStruct.i_idNode = int(stringData[i])
-                    break
-                if case(1):
-                    nodeStruct.i_codeCommand = int(stringData[i])
-                    break
-                if case(2):
-                    nodeStruct.i_code_answer = int(stringData[i])
-                    break
-                if case(3):
-                    nodeStruct.o_obj.h_idObj = int(stringData[i])
-                    break
-                if case(4):
-                    nodeStruct.o_obj.h_idSubObj = int(stringData[i])
-                    break
-                if case(5):
-                    # nodeStruct.o_obj.i_typeData = int(stringData[i])
-                    break
-                if case(6):
-                    nodeStruct.o_obj.i_typeData, \
-                    nodeStruct.o_obj.d_value = self.setValueNodeStruct(stringData[i])
-                    break
-                if case(length - 3):
-                    nodeStruct.o_obj.i_check = int(stringData[i])
-                    break
-                if case():
-                    break
+        index=0
+        for i in range(length):
+            if len(stringData[i]) > 0:
+                for case in switch(index):
+                    if case(0):
+                        nodeStruct.i_idNode = int(stringData[i])
+                        break
+                    if case(1):
+                        nodeStruct.i_codeCommand = int(stringData[i])
+                        break
+                    if case(2):
+                        nodeStruct.i_code_answer = int(stringData[i])
+                        break
+                    if case(3):
+                        nodeStruct.o_obj.h_idObj = int(stringData[i])
+                        break
+                    if case(4):
+                        nodeStruct.o_obj.h_idSubObj = int(stringData[i])
+                        break
+                    if case(5):
+                        # nodeStruct.o_obj.i_typeData = int(stringData[i])
+                        break
+                    if case(6):
+                        nodeStruct.o_obj.i_typeData, \
+                        nodeStruct.o_obj.d_value = self.setValueNodeStruct(stringData[i])
+                        break
+                    if case(7):
+                        nodeStruct.o_obj.i_check = int(stringData[i])
+                        break
+                    if case():
+                        break
+                index += 1
         return nodeStruct
