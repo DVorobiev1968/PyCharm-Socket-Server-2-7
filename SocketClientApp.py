@@ -11,7 +11,7 @@ def usage(msg=None):
     sys.stdout = sys.stderr
     if msg:
         print(msg)
-    print("\n", __doc__, end=' ')
+    print("\n", __doc__)
     sys.exit(2)
 
 def loadParameters():
@@ -39,8 +39,9 @@ def loadParameters():
 loadParameters()
 d_value_1=0
 # d_value_1=socketClient.load_for_algoritm(1, 0x1000+7)
-socketClient.set_socket_node(2,0x1000+7,socketClient.mesPacked.CODE_SINGLE_START,1968)
-d_value=socketClient.load_socket_node(2, 0x1000+7)
-socketClient.mesPacked.print_message("d_value:{0:4.10f}".format(d_value), PLCGlobals.INFO)
-socketClient.mesPacked.print_message("d_value_1:{0:4.10f}".format(d_value_1), PLCGlobals.INFO)
-socketClient.set_socket_node(3,0x1000+7,socketClient.mesPacked.CODE_SINGLE_START,1968)
+d_value=socketClient.set_socket_node(11,0x1000,socketClient.mesPacked.CODE_SINGLE_START,100.00000001)
+socketClient.mesPacked.print_message("socketClient.set_socket_node:{0:4.10f}".format(d_value), PLCGlobals.INFO)
+d_value=socketClient.load_socket_node(11, 0x1000)
+socketClient.mesPacked.print_message("socketClient.load_socket_node:{0:4.10f}".format(d_value), PLCGlobals.INFO)
+# # socketClient.mesPacked.print_message("d_value_1:{0:4.10f}".format(d_value_1), PLCGlobals.INFO)
+# socketClient.set_socket_node(3,0x1000+7,socketClient.mesPacked.CODE_SINGLE_START,1968)

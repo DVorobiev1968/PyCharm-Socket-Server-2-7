@@ -13,6 +13,8 @@ class MesPacked():
     def __init__(self):
         self.code_status=0
         self.errMessage=str("")
+        self.DELIM=str(";\r\n")
+        self.LEN_DELIM=3
         # коды блока готовности Алгоритмов и их описание
         self.CODE_ALGORITM_OPERATION = 50
         self.SET_ALGORITM_VAL_OK = self.CODE_ALGORITM_OPERATION+PLCGlobals.SET_VAL_OK
@@ -257,9 +259,10 @@ class MesPacked():
             nodeStruct.o_obj.i_typeData,
             nodeStruct.o_obj.d_value)
         i_length = len(s_message)
-        i_length+=3+2
-        nodeStruct.o_obj.s_message = "{0};{1};\r\n".format(s_message, i_length)
-        nodeStruct.o_obj.b_message=bytes(s_message,'utf-8')
+        i_length+=len(str(i_length))
+        i_length+=self.LEN_DELIM
+        nodeStruct.o_obj.s_message = "{0};{1}{2}".format(s_message, i_length, self.DELIM)
+        nodeStruct.o_obj.b_message=bytes(nodeStruct.o_obj.s_message,'utf-8')
         # nodeStruct.o_obj.s_message=str(nodeStruct.o_obj.b_message,'utf-8')
         nodeStruct.o_obj.b_obj=pickle.dumps(nodeStruct,0)
         i_length_obj=len(nodeStruct.o_obj.b_obj)
@@ -292,7 +295,7 @@ class MesPacked():
         i_length=0
         b_message=bytes()
         b_obj=bytes()
-        if i_data == nodeStruct.o_obj.i_check:
+        if i_data >= nodeStruct.o_obj.i_check:
             if nodeStruct.i_codeCommand == self.CODE_START:
                 i_length, nodeStruct = self.setB_message(self.OK, nodeStruct)
                 i_status = self.OK

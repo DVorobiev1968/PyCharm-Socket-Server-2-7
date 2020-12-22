@@ -16,6 +16,10 @@ class Nodes():
     FIND_OBJ_ERR = -1
 
     def __init__(self):
+        """
+        Класс для ведения плоского архива по узлам
+        :rtype: object
+        """
         key_obj = ['h_idObj',
                'h_idSubObj',
                'i_typeData',
@@ -52,7 +56,14 @@ class Nodes():
     def __del__(self):
         pass
 
-#################################################
+    def __len__(self):
+        len_nodes=self.list_nodes.__len__()
+        len_obj=0
+        for i in range(len_nodes):
+            len_obj+=self.list_nodes[i]['Objs'].__len__()
+        return len_nodes, len_obj
+
+
     def set_dict_val_obj(self, key, value):
         b_status = False
         if self.dict_objs.get(key) is not None:
@@ -348,7 +359,7 @@ class Nodes():
                 self.list_nodes[i]["i_codeCommand"],
                 self.list_nodes[i]["s_command"],
                 self.list_nodes[i]["s_message"],
-                self.list_nodes[i]["Algoritm"],)
+                self.list_nodes[i]["Algoritm"].__str__(),)
             self.mesPacked.print_message(str_node_info,PLCGlobals.INFO)
             len_objs=len(self.list_nodes[i]["Objs"])
             self.messageErr="Objs length:{0:3d} objs".format(len_objs)
@@ -358,7 +369,7 @@ class Nodes():
                     "h_idSubObj:{1:d}({1:X});" \
                     "d_value:{2:4.10f};" \
                     "i_typeData:{3:d};" \
-                    "b_message:{4:<10s}".format(
+                    "b_message:{4}".format(
                     self.list_nodes[i]["Objs"][j]['h_idObj'],
                     self.list_nodes[i]["Objs"][j]['h_idSubObj'],
                     self.list_nodes[i]["Objs"][j]['d_value'],
@@ -366,6 +377,21 @@ class Nodes():
                     self.list_nodes[i]["Objs"][j]['b_message']
                 )
                 self.mesPacked.print_message(str_node_info,PLCGlobals.INFO)
+
+    def printInfoNodes(self):
+        self.errMessage="Class:{0}\n".format(self.__class__)
+        (nodes, objs)=self.__len__()
+        self.errMessage="\t{0}Nodes:{1},Objs:{2}\n".format(self.errMessage,nodes,objs)
+        self.errMessage="\t{0}ID object:{1}\n".format(self.errMessage,self.__str__())
+        self.mesPacked.print_message(self.errMessage,PLCGlobals.INFO)
+        return self.errMessage
+
+    def readInfoNodes(self):
+        self.errMessage="Class:{0}\n".format(self.__class__)
+        (nodes, objs)=self.__len__()
+        self.errMessage="\t{0}Nodes:{1},Objs:{2}\n".format(self.errMessage,nodes,objs)
+        self.errMessage="\t{0}ID object:{1}".format(self.errMessage,self.__str__())
+        return self.errMessage
 
 ################################ start section #################################
 def loadObjs(index_node,nodes):
@@ -413,7 +439,7 @@ if __name__ == '__main__':
                         "h_idSubObj:{6:d}({6:X});" \
                         "i_typeData:{7:d};" \
                         "i_check:{8:d};" \
-                        "b_message:{9:s}" \
+                        "b_message:{9}" \
             .format(
             nodes.list_nodes[i]['i_idNode'],
             nodes.list_nodes[i]["i_code_answer"],
@@ -429,4 +455,7 @@ if __name__ == '__main__':
         nodes.mesPacked.print_message(str_node_info, PLCGlobals.INFO)
 
     nodes.print_list_nodes()
+    str_node_info=nodes.readInfoNodes()
+    nodes.mesPacked.print_message(str_node_info, PLCGlobals.INFO)
+
 

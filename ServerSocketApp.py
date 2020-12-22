@@ -33,6 +33,8 @@ class ServerThread(Thread):
         mesPacked.print_message("Thread name:{0:s} has connection from {1:s}."
                                 .format(str(self.name), caddr),
                                 PLCGlobals.WARNING)
+
+        mesPacked.print_message("Info nodes:{0}.".format(nodes.readInfoNodes()),PLCGlobals.INFO)
         stdin = self.conn.makefile("r")
         stdout = self.conn.makefile("w")
         self.parser(stdin, stdout)
@@ -122,12 +124,15 @@ class ServerThread(Thread):
                 self.save_node(i_status, nodeStruct)
                 self.lock.release()
                 if i_status == mesPacked.OK:
+                    mesPacked.print_message("CODE_START<-:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
+                    mesPacked.setB_message(i_status,nodeStruct)
                     stdout.write(nodeStruct.o_obj.s_message)
-                    mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
-                    data = stdin.readline()
-                    i_status, nodeStruct = mesPacked.recvMessageNode(data)
+                    mesPacked.print_message("CODE_START->:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 else:
-                    pass
+                    mesPacked.setB_message(i_status,nodeStruct)
+                    stdout.writeln(nodeStruct.o_obj.s_message)
+                    mesPacked.print_message("Error in s_message:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
+                data = stdin.readline()
             elif nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START_SYNC:
                 self.lock.acquire()
                 self.save_node(i_status, nodeStruct)
@@ -138,7 +143,8 @@ class ServerThread(Thread):
                     if algoritm_status == mesPacked.SET_ALGORITM_VAL_OK:
                         nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
                         stdout.write(nodeStruct.o_obj.s_message)
-                        mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
+                        mesPacked.print_message("CODE_SINGLE_START_SYNC->:{0}".format(nodeStruct.o_obj.s_message),
+                                                PLCGlobals.BREAK_DEBUG)
                     elif algoritm_status == mesPacked.SET_ALGORITM_WAIT:
                         sleep(0.05)
                     elif nodes.list_nodes[i_node]['Algoritm'].status == mesPacked.SET_ALGORITM_VAL_FAIL:
@@ -154,7 +160,7 @@ class ServerThread(Thread):
                     self.lock.release()
                     nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
                     stdout.write(nodeStruct.o_obj.s_message)
-                    mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
+                    mesPacked.print_message("CODE_SINGLE_START->{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 else:
                     mesPacked.setB_message(i_status,nodeStruct)
                     stdout.write(nodeStruct.o_obj.s_message)
@@ -197,7 +203,7 @@ class ServerThread(Thread):
                     i_length, nodeStruct = mesPacked.setB_message(mesPacked.SEARCH_FAIL, nodeStruct)
 
                 stdout.write(str(nodeStruct.o_obj.s_message))
-                mesPacked.print_message("b_message:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
+                mesPacked.print_message("mesPacked.CODE_FIND_NODES:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 break
             elif nodeStruct.i_codeCommand == mesPacked.CODE_EXIT_SERVER:
                 mesPacked.print_message("Stop servers, recieve code:{0}...".format(nodeStruct.i_codeCommand),
@@ -266,7 +272,7 @@ def main_thread(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind((host, port))
     sock.listen(10)
-    PLCGlobals.debug = PLCGlobals.INFO
+    PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.WARNING)
 
     while 1:

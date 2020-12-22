@@ -7,7 +7,7 @@ from Nodes import Nodes
 from PLCGlobals import PLCGlobals
 
 class SocketClient():
-    def __init__(self,host="localhost",port="8889"):
+    def __init__(self,host="localhost",port=8889):
         """
         По умолчанию localhost, port:8889
         :rtype: object
@@ -20,17 +20,18 @@ class SocketClient():
 
     def set_socket_node(self,id_Node, id_Obj, i_command, d_value=0, idSubObj=0):
         """
-        функция отправляет на сервер телеграмму с необходимой командой
+        метод отправляет на сервер телеграмму с необходимой командой
         :param id_Node: идентификатор узла
         :param id_Obj: идентификатор объекта
         :param i_command: код команды
         :param d_value: значение для записи
         :param idSubObj: идентификатор субобъекта, по умолчанию
-        :return:
+        :return: i_status, nodeStruct: статус и структуру узла
         """
+        i_status=0
+        nodeStruct = NodeInfo()
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            nodeStruct = NodeInfo()
             i_code_answer = 0
             nodeStruct.i_idNode = id_Node
             nodeStruct.i_code_answer = i_code_answer
@@ -58,6 +59,12 @@ class SocketClient():
         except ConnectionRefusedError as err_message:
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
 
+        def get_value():
+            if i_status==self.mesPacked.OK:
+                return nodeStruct.o_obj.d_value
+            else:
+                return 0
+        return  get_value()
 
     def load_for_algoritm(self, id_Node, id_Obj, idSubObj=0):
         """
@@ -66,7 +73,7 @@ class SocketClient():
         :param id_Node: идентификатор узла
         :param id_Obj: идентификатор объекта
         :param idSubObj: идентификатор субобъекта, по умолчанию 0
-        :return:
+        :return i_status, nodeStruct: статус и структуру узла
         """
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -101,16 +108,21 @@ class SocketClient():
         except ConnectionRefusedError as err_message:
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
             return 0
-        return d_value
 
+        def get_value():
+            if i_status==self.mesPacked.OK:
+                return nodeStruct.o_obj.d_value
+            else:
+                return 0
+        return  get_value()
 
     def load_socket_node(self, id_Node, id_Obj, idSubObj=0):
         """
-        функция отправляет на сервер телеграмму с необходимой командой
+        метод для поиска узла и выгрузки данных
         :param id_Node: идентификатор узла
         :param id_Obj: идентификатор объекта
         :param idSubObj: идентификатор субобъекта, по умолчанию 0
-        :return:
+        :return i_status, nodeStruct: статус и структуру узла
         """
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -146,4 +158,10 @@ class SocketClient():
         except ConnectionRefusedError as err_message:
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
             return 0
-        return d_value
+
+        def get_value():
+            if i_status==self.mesPacked.OK:
+                return nodeStruct.o_obj.d_value
+            else:
+                return 0
+        return  get_value()
