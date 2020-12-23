@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import socket
+import socket, sys
+
+if sys.version_info < (3, 7):
+    from twisted.internet.error import ConnectionRefusedError
 
 from MesPacked import MesPacked, NodeInfo
 from Nodes import Nodes
@@ -142,8 +145,9 @@ class SocketClient():
                                     format(nodeStruct.o_obj.b_message),
                                     PLCGlobals.INFO)
 
-            b_received=sock.recv(1024)
-            s_received = b_received.decode('utf-8')
+            s_received=sock.recv(1024)
+            if sys.version_info > (3, 0):
+                s_received = s_received.decode('utf-8')
             i_status, nodeStruct = self.mesPacked.recvMessageNode(s_received)
             if (i_status != self.mesPacked.SEARCH_FAIL):
                 b_message = "loadSocketNode:{0}".format(nodeStruct.o_obj.b_message)

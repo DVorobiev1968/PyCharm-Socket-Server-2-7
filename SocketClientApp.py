@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import getopt
-import sys
-
+import getopt, sys
 from SocketClient import SocketClient
 from PLCGlobals import PLCGlobals
 
@@ -36,6 +34,9 @@ def loadParameters():
     else:
         socketClient = SocketClient()
 
+module=sys.argv[0].split('/')[-1].split('.')[0]
+sys_info="Starting {0} from Python:{1}.{2}\n".format(module,sys.version_info.major, sys.version_info.minor)
+print (sys_info)
 loadParameters()
 d_value_1=0
 # d_value_1=socketClient.load_for_algoritm(1, 0x1000+7)

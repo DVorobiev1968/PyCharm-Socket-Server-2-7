@@ -262,7 +262,10 @@ class MesPacked():
         i_length+=len(str(i_length))
         i_length+=self.LEN_DELIM
         nodeStruct.o_obj.s_message = "{0};{1}{2}".format(s_message, i_length, self.DELIM)
-        nodeStruct.o_obj.b_message=bytes(nodeStruct.o_obj.s_message,'utf-8')
+        if  sys.version_info < (3,7):
+            nodeStruct.o_obj.b_message = bytes(nodeStruct.o_obj.s_message)
+        else:
+            nodeStruct.o_obj.b_message=bytes(nodeStruct.o_obj.s_message,'utf-8')
         # nodeStruct.o_obj.s_message=str(nodeStruct.o_obj.b_message,'utf-8')
         nodeStruct.o_obj.b_obj=pickle.dumps(nodeStruct,0)
         i_length_obj=len(nodeStruct.o_obj.b_obj)

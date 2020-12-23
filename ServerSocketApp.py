@@ -235,6 +235,8 @@ def loadSettings(key, mesPacked):
 
 
 def main():
+    global mesPacked
+    mesPacked = MesPacked()
     try:
         opts, args = getopt.getopt(sys.argv[1:], "")
         if len(args) > 2:
@@ -253,6 +255,9 @@ def main():
         host = loadSettings(1, mesPacked)
         port = loadSettings(2, mesPacked)
 
+    module = sys.argv[0].split('/')[-1].split('.')[0]
+    sys_info = "Starting {0} from Python:{1}.{2}\n".format(module, sys.version_info.major, sys.version_info.minor)
+    print (sys_info)
     main_thread(host, port)
 
 
@@ -260,13 +265,12 @@ def usage(msg=None):
     sys.stdout = sys.stderr
     if msg:
         print(msg)
-    print("\n", __doc__, end=' ')
+    print("\n", __doc__)
     sys.exit(2)
 
 
 def main_thread(host, port):
     global mesPacked, nodes
-    mesPacked = MesPacked()
     nodes = Nodes()
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
