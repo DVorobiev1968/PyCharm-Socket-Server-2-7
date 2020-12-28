@@ -8,7 +8,8 @@ class AlgoritmInfo():
         :@type status: int          статус берется из Classif, отражает состояние расчета алгоритма ФБ-ом
         """
         self.status = status
-        self.dateTime = datetime.datetime.now()
+        if status!=55:
+            self.dateTime = datetime.datetime.now()
     def __repr__(self):
         return "{0};{1}".format(self.status,self.dateTime.strftime("%d.%m.%Y %H:%M:%S.%f"))
     def __str__(self):

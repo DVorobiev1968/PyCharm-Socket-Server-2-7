@@ -42,8 +42,9 @@ class MesPacked():
         self.CODE_SINGLE_START_ASYNC = 5
         self.CODE_LIST_NODES = 10
         self.CODE_FIND_NODES = 11
-        self.CODE_LOAD_FOR_ALGORITM = 12
-        self.CODE_SAVE_FOR_ALGORITM = 13
+        self.CODE_FIND_NODES_SYNC = 12
+        self.CODE_LOAD_FOR_ALGORITM = 13
+        self.CODE_SAVE_FOR_ALGORITM = 14
         self.CODE_EXIT = 20
         self.CODE_EXIT_SERVER = 21
         # сетевые настройки
@@ -69,6 +70,7 @@ class MesPacked():
             self.CODE_SINGLE_START_ASYNC: "Single start command no wait synchronisation with FB",
             self.CODE_LIST_NODES: "Printing nodes list",
             self.CODE_FIND_NODES: "Search nodes and objext",
+            self.CODE_FIND_NODES_SYNC: "Search nodes and objext synchronisation with FB",
             self.CODE_LOAD_FOR_ALGORITM: "Search nodes and objext and load data of node for Algoritm",
             self.CODE_SAVE_FOR_ALGORITM: "Save data from Algoritm",
             self.CODE_EXIT: "Close connect Client stopped",
@@ -191,7 +193,7 @@ class MesPacked():
          :param i_code_answer: код ответа на команду (статуc), параметр опциональный
          :return: объект типа AlgoritmInfo
          """
-        algoritmInfo=AlgoritmInfo()
+        algoritmInfo=AlgoritmInfo(i_command)
         if i_command==self.CODE_LOAD_FOR_ALGORITM:
             algoritmInfo.status=self.SET_ALGORITM_WAIT
         elif i_command==self.CODE_SAVE_FOR_ALGORITM:
