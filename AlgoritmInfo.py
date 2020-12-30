@@ -4,7 +4,7 @@ import datetime
 class AlgoritmInfo():
     def __init__(self,status=50):
         """
-        По умолчанию устнавливаем статуи в CODE_ALGORITM_OPERATION
+        По умолчанию устнавливаем статуc в CODE_ALGORITM_OPERATION
         :@type status: int          статус берется из Classif, отражает состояние расчета алгоритма ФБ-ом
         """
         self.status = status

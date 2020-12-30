@@ -300,7 +300,7 @@ class Nodes():
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case("Algoritm"):
-                        self.list_nodes[i]["Algoritm"]=value
+                        self.list_nodes[i]["Algoritm"]=AlgoritmInfo(value.status)
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case():
