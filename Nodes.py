@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
-import copy, random
+import copy, random, sys
 
-from numpy import double
+if sys.version_info < (3, 7):
+    from numpy.core import double
+else:
+    from decimal import Decimal
+    def double(arg):
+        return Decimal(arg)
 
 from switch import switch
 from PLCGlobals import PLCGlobals

@@ -4,4 +4,6 @@ venv
 *.txt
 *.odt
 *.xls*
+*.xml
+*.iml
 
