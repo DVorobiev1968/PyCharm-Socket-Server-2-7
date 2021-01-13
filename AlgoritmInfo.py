@@ -5,7 +5,9 @@ class AlgoritmInfo():
     def __init__(self,status=50):
         """
         По умолчанию устнавливаем статуc в CODE_ALGORITM_OPERATION
-        :@type status: int          статус берется из Classif, отражает состояние расчета алгоритма ФБ-ом
+
+        :@type status: int статус берется из Classif, отражает состояние расчета алгоритма ФБ-ом
+
         """
         self.status = status
         if status!=55:
@@ -19,6 +21,8 @@ class AlgoritmInfo():
     def __len__(self):
         """
         переопределяем метод, выставляем что кол-во элементов 2
+
         :rtype: object
+
         """
         return 2

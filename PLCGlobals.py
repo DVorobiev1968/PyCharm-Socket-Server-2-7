@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
 class PLCGlobals():
+    """
+    класс для отладки, имитирует модуль глобальных переменных Beremiz
+
+    """
+
     def __init__(self):
         pass
 

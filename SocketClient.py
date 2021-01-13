@@ -10,11 +10,14 @@ from Nodes import Nodes
 from PLCGlobals import PLCGlobals
 
 class SocketClient():
+    """
+    класс реализует работу сетевого Python-клиента
+    По умолчанию в конструкторе сипользуются следующие настройки:
+        * host: localhost
+        * port: 8889
+    """
+
     def __init__(self,host="localhost",port=8889):
-        """
-        По умолчанию localhost, port:8889
-        :rtype: object
-        """
         self.host=host
         self.port=port
         self.mesPacked = MesPacked()
@@ -24,12 +27,16 @@ class SocketClient():
     def set_socket_node(self,id_Node, id_Obj, i_command, d_value=0, idSubObj=0):
         """
         метод отправляет на сервер телеграмму с необходимой командой
-        :param id_Node: идентификатор узла
-        :param id_Obj: идентификатор объекта
-        :param i_command: код команды
-        :param d_value: значение для записи
-        :param idSubObj: идентификатор субобъекта, по умолчанию
-        :return: i_status, nodeStruct: статус и структуру узла
+
+        :param: * id_Node: идентификатор узла
+                * id_Obj: идентификатор объекта
+                * i_command: код команды
+                * d_value: значение для записи
+                * idSubObj: идентификатор субобъекта, по умолчанию
+
+        :return: * i_status: код ошибки
+                * nodeStruct: объект заполненная структура узла
+
         """
         i_status=0
         nodeStruct = NodeInfo()
@@ -72,11 +79,15 @@ class SocketClient():
     def load_for_algoritm(self, id_Node, id_Obj, idSubObj=0):
         """
         функция отправляет на сервер телеграмму что запрошены данные для
-         расчета алгоритма
-        :param id_Node: идентификатор узла
-        :param id_Obj: идентификатор объекта
-        :param idSubObj: идентификатор субобъекта, по умолчанию 0
-        :return i_status, nodeStruct: статус и структуру узла
+        расчета алгоритма
+
+        :param: * id_Node: идентификатор узла
+                * id_Obj: идентификатор объекта
+                * idSubObj: идентификатор субобъекта, по умолчанию =0
+
+        :return: * i_status: код ошибки
+                * nodeStruct: заполненная структура узла
+
         """
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,11 +133,13 @@ class SocketClient():
     def save_for_algoritm(self, id_Node, id_Obj, d_value=0, idSubObj=0):
         """
         функция отправляет на сервер телеграмму о завершении расчета алгоритма
-        :param id_Node: идентификатор узла
-        :param id_Obj: идентификатор объекта
-        :param idSubObj: идентификатор субобъекта, по умолчанию 0
-        :param d_value: значение которое было расчитано в алгоритме
-        :return i_status, nodeStruct: статус и структуру узла
+
+        :param: * id_Node: идентификатор узла
+                * id_Obj: идентификатор объекта
+                * idSubObj: идентификатор субобъекта, по умолчанию 0
+                * d_value: значение которое было расчитано в алгоритме
+        :return: * i_status: код ошибки
+                * nodeStruct: заполненная структура узла
         """
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -174,10 +187,13 @@ class SocketClient():
     def load_socket_node(self, id_Node, id_Obj, idSubObj=0):
         """
         метод для поиска узла и выгрузки данных
-        :param id_Node: идентификатор узла
-        :param id_Obj: идентификатор объекта
-        :param idSubObj: идентификатор субобъекта, по умолчанию 0
-        :return i_status, nodeStruct: статус и структуру узла
+
+        :param: * id_Node: идентификатор узла
+                * id_Obj: идентификатор объекта
+                * idSubObj: идентификатор субобъекта, по умолчанию 0
+
+        :return: * i_status: код ошибки
+                * nodeStruct: заполненная структура узла
         """
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

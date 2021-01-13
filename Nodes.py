@@ -14,6 +14,10 @@ from MesPacked import MesPacked
 from AlgoritmInfo import AlgoritmInfo
 
 class Nodes():
+    """
+    Класс для ведения плоского архива по узлам
+
+    """
     errMessage= ""
     mesPacked=MesPacked()
     # коды ошибок возвращаемые методами классов, не совпадает с i_code_answer
@@ -22,8 +26,7 @@ class Nodes():
 
     def __init__(self):
         """
-        Класс для ведения плоского архива по узлам
-        :rtype: object
+        Инициализация класса для ведения плоского архива по узлам
         """
         key_obj = ['h_idObj',
                'h_idSubObj',
@@ -62,6 +65,13 @@ class Nodes():
         pass
 
     def __len__(self):
+        """
+        расчет кол-ва узлов и кол-ва объектов
+
+        :return: * len_nodes: кол-во узлов
+                 * len_obj: кол-во объектов
+
+        """
         len_nodes=self.list_nodes.__len__()
         len_obj=0
         for i in range(len_nodes):
@@ -70,6 +80,12 @@ class Nodes():
 
 
     def set_dict_val_obj(self, key, value):
+        """
+        Установка значения словаря
+
+        :return: b_status: признак наличия ключа в словаре
+
+        """
         b_status = False
         if self.dict_objs.get(key) is not None:
             self.dict_objs[key] = value
@@ -99,6 +115,15 @@ class Nodes():
         return list_objs
 
     def get_val_obj(self, id_Obj, name_field):
+        """
+        поиск и получение свойства найденого объекта
+
+        :param: * id_Obj: идентификатор объекта
+                * name_field: наименование поля в структуре объекта
+
+        :return: значение поля
+
+        """
         result = None
         length = len(self.list_objs)
         typeVal = self.mesPacked.dict_typeData["None"]
@@ -132,10 +157,13 @@ class Nodes():
         рекурсивный метод присваивает значения объектам внустри узла, в случае если
         объекта в узле не обнаружено то он рекурсивно вызывается и заносит данные
         в краткосрочный архив
-        :param: list_obj: список объектов внутри узла
-        :param: nodeStruct: структура содержащая идентификатор объекта внутри узла
-        и все соотвествующие объекту отрибуты
-        :rtype: i_status, list_objs статус и обновленный список с объектами узла
+
+        :param: * list_obj: список объектов внутри узла
+                * nodeStruct: структура содержащая идентификатор объекта внутри узла и все соотвествующие объекту отрибуты
+
+        :return: * i_status: код ошибки
+                * list_objs: обновленный список с объектами узла
+
         """
         i_status = PLCGlobals.SET_VAL_FAIL
         length = len(list_objs)
@@ -159,11 +187,15 @@ class Nodes():
     def set_val_obj_old(self, list_objs, id_Obj, name_field, value=0):
         """
         метод присваивает значения объектам внустри узла
-        :param: list_obj: список объектов внутри узла
-        :param: id_Obj: идентификатор объекта внутри узла
-        :param: name_filed: имя поля в словаре которое указывает на переменную
-        :param: value: значение является необязательныйм параметром
-        :rtype: object
+
+        :param: * list_obj: список объектов внутри узла
+                * id_Obj: идентификатор объекта внутри узла
+                * name_filed: имя поля в словаре которое указывает на переменную
+                * value: значение является необязательныйм параметром
+
+        :return: * i_status: код ошибки
+                * list_objs-список объектов
+
         """
         i_status = PLCGlobals.SET_VAL_FAIL
         length = len(list_objs)
@@ -221,6 +253,14 @@ class Nodes():
         self.dict_nodes[key]=copy.deepcopy(item)
 
     def add_item_nodes(self, item):
+        """
+        добавление узла в список узлов
+
+        :param item: элемент типа nodeStruct
+
+        :return i_status: код ошибки
+
+        """
         length = len(self.list_nodes)
         self.add_item_dict('Objs',[])
         self.add_item_dict('Algoritm',AlgoritmInfo(self.mesPacked.SET_ALGORITM_VAL_FAIL))
@@ -243,6 +283,15 @@ class Nodes():
         return i_status
 
     def get_val(self, id_Node, name_field):
+        """
+        чтение значения, в указанном узле
+
+        :param: * id_node: идентификатор узла
+                * name_field: имя поля в структоре узла
+
+        :return: result: значения
+
+        """
         result = None
         length = len(self.list_nodes)
         typeVal = self.mesPacked.dict_typeData["None"]
@@ -277,6 +326,17 @@ class Nodes():
         return result
 
     def set_val(self, id_Node, name_field, value=0):
+        """
+        установка значения, в указанном узле
+
+        :param: * id_node: идентификатор узла
+                * name_field: имя поля в структоре узла
+                * value: значение тэга узла
+
+        :return: * i_status: код ошибки,
+                * i_index: номер элемента в списке узлов
+
+        """
         i_status = PLCGlobals.SET_VAL_FAIL
         length = len(self.list_nodes)
         i_index=length-1
@@ -318,6 +378,14 @@ class Nodes():
         return i_status, i_index
 
     def find_node(self, id_node):
+        """
+        поиск узла в краткосрочный архиве
+
+        :param: id_node: идентификатор узла
+
+        :return: * i_status: код ошибки,
+                * object: элемент из списка узлов
+        """
         length = len(self.list_nodes)
         for i in range(length):
             if self.list_nodes[i]["i_idNode"]==id_node:
@@ -325,6 +393,15 @@ class Nodes():
         return self.FIND_NODE_ERR, None
 
     def find_obj(self, id_obj, objs):
+        """
+        поиск объекта в краткосрочный архиве
+
+        :param: * id_obj: идентификатор объекта
+                * objs: список объектов
+
+        :return: i_status: код ошибки
+
+        """
         length = len(objs)
         for i in range(length):
             if objs[i]["h_idObj"]==id_obj:
@@ -336,9 +413,13 @@ class Nodes():
         метод ищет в хранилище данных данные по идентификатору узла и объекта
         возвращает индекс узла в списке узлов, а также индекс найденной объекта
         в списке объектов
-        :param id_node:
-        :param id_obj:
-        :return: i, i_obj:  индекс узла, индек объекта
+
+        :param: * id_node: идентификатор узла
+                * id_obj: идентификатор объекта
+
+        :return: * i: индекс узла
+                * i_obj: индекс объекта
+
         """
         i, objs = self.find_node(id_node)
         if i!=self.FIND_NODE_ERR:
@@ -352,6 +433,10 @@ class Nodes():
         self.mesPacked.print_message(self.dict_nodes,PLCGlobals.INFO)
 
     def print_list_nodes(self):
+        """
+        метод вывод информацию по всем сформированным узлам и объектам
+
+        """
         length = len(self.list_nodes)
         for i in range(length):
             str_node_info="i_idNode:{0:d};i_code_answer:{1:d}({1:X});" \
@@ -384,6 +469,12 @@ class Nodes():
                 self.mesPacked.print_message(str_node_info,PLCGlobals.INFO)
 
     def printInfoNodes(self):
+        """
+        метод печатает информацию по узлу и объекту
+
+        :return: errMessage: строка с информацией по узлу
+
+        """
         self.errMessage="Class:{0}\n".format(self.__class__)
         (nodes, objs)=self.__len__()
         self.errMessage="\t{0}Nodes:{1},Objs:{2}\n".format(self.errMessage,nodes,objs)
@@ -392,6 +483,12 @@ class Nodes():
         return self.errMessage
 
     def readInfoNodes(self):
+        """
+        метод формирует информацию по узлу и объекту
+
+        :return: errMessage: строка с информацией по узлу
+
+        """
         self.errMessage="Class:{0}\n".format(self.__class__)
         (nodes, objs)=self.__len__()
         self.errMessage="\t{0}Nodes:{1},Objs:{2}\n".format(self.errMessage,nodes,objs)

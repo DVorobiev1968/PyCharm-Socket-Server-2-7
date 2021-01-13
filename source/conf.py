@@ -12,15 +12,15 @@
 #
 import os
 import sys
-#sys.path.insert(0, os.path.abspath('.'))
-devdir=''
-try:
-    if os.environ['DEVDIR']:
-        devdir = os.environ['DEVDIR']
-except KeyError:
-    print('Unable to obtain $DEVDIR from the environment.')
-    exit(-1)
-sys.path.insert(0, devdir)
+sys.path.insert(0, os.path.abspath('..'))
+# devdir=''
+# try:
+#     if os.environ['DEVDIR']:
+#         devdir = os.environ['DEVDIR']
+# except KeyError:
+#     print('Unable to obtain $DEVDIR from the environment.')
+#     exit(-1)
+# sys.path.insert(0, devdir)
 # -- Project information -----------------------------------------------------
 
 project = 'SockerServer'
@@ -36,8 +36,7 @@ release = '1.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-]
+extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode','sphinx.ext.autodoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -68,16 +67,16 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 #----------autodoc------------
-autodoc_member_order = 'groupwise'
-
-# Ensure that the __init__ method gets documented.
-def skip(app, what, name, obj, skip, options):
-    if name == "__init__":
-        return False
-    return skip
-
-def setup(app):
-    app.connect("autodoc-skip-member", skip)
+# autodoc_member_order = 'groupwise'
+#
+# # Ensure that the __init__ method gets documented.
+# def skip(app, what, name, obj, skip, options):
+#     if name == "__init__":
+#         return False
+#     return skip
+#
+# def setup(app):
+#     app.connect("autodoc-skip-member", skip)
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

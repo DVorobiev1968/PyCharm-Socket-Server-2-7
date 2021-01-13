@@ -5,13 +5,15 @@ from AlgoritmInfo import AlgoritmInfo
 
 class NodeInfo():
     """
-    :param: i_idNode = 1       идентификатор узла
-    :param: i_code_answer = 0  код ответа от узла
-    :param: i_codeCommand = 0  код команды присваивается в зависимости от протокола работы узла
-    :param: s_command = ""     описание команды
-    :param: s_message = ""     строка получаемая из буфера
-    :param: list_obj = []      будет содержаться список NodeObjInfo
-    :param: o_obj = NodeObjInfo()  для nodeStruct
+    класс содержит структуру объектя для сетевого взаимодействия по протоколу CAN
+
+    :param: * i_idNode: = 1       идентификатор узла
+            * i_code_answer: = 0  код ответа от узла
+            * i_codeCommand: = 0  код команды присваивается в зависимости от протокола работы узла
+            * s_command: = ""     описание команды
+            * s_message: = ""     строка получаемая из буфера
+            * list_obj: = []      будет содержаться список NodeObjInfo
+            * o_obj: = NodeObjInfo()  для nodeStruct
     """
 
     def __init__(self):

@@ -6,6 +6,8 @@ if sys.version_info < (3, 7):
     from numpy.core import double
 else:
     from decimal import Decimal
+
+
     def double(arg):
         return Decimal(arg)
 
@@ -14,31 +16,109 @@ from PLCGlobals import PLCGlobals
 from NodeInfo import NodeInfo
 from AlgoritmInfo import AlgoritmInfo
 
+
 class MesPacked():
+    """
+    Класс для определения структур в соотвествии с протоколом CAN, для сетевого взаимодействия
+    Обеспечение сетевого вхаимодействия между сервером и клиентом
+
+    Коды блока готовности Алгоритмов и их описание:
+        * CODE_ALGORITM_OPERATION = 50
+        * SET_ALGORITM_VAL_OK = CODE_ALGORITM_OPERATION + PLCGlobals.SET_VAL_OK
+        * SET_ALGORITM_VAL_FAIL = CODE_ALGORITM_OPERATION + PLCGlobals.SET_VAL_FAIL
+        * SET_ALGORITM_WAIT = CODE_ALGORITM_OPERATION + PLCGlobals.UPDATE_FAIL
+
+    Коды i_code_answer и их описание:
+        * CODE_NODES_OPERATION = 60
+        * ADD_OK = CODE_NODES_OPERATION + PLCGlobals.ADD_OK
+        * ADD_FAIL = CODE_NODES_OPERATION + PLCGlobals.ADD_FAIL
+        * UPDATE_OK = CODE_NODES_OPERATION + PLCGlobals.UPDATE_OK
+        * UPDATE_FAIL = CODE_NODES_OPERATION + PLCGlobals.UPDATE_FAIL
+        * SET_VAL_OK = CODE_NODES_OPERATION + PLCGlobals.SET_VAL_OK
+        * SET_VAL_FAIL = CODE_NODES_OPERATION + PLCGlobals.SET_VAL_FAIL
+        * SEARCH_FAIL = 78
+        * SEARCH_OK = 79
+        * OK = 80
+        * ERR = 99
+        * SYNTAX_ERR = 101
+
+    Коды команд Сервера технологических данных:
+        #. CODE_START = 1: Множественная загрузка узлов с инициализацией значений тэгов в каждом
+        #. CODE_STOP = 2: Останов Сервера внутри сессии
+        #. CODE_SINGLE_START = 3: Команда на одиночную работу с конкретным узлом
+        #. CODE_SINGLE_START_SYNC = 4: Команда на одиночную работу с конкретным узлом в режиме синхронной передачи данных
+        #. CODE_SINGLE_START_ASYNC = 5: Команда на одиночную работу с конкретным узлом в режиме асинхронной передачи данных
+        #. CODE_LIST_NODES = 10: Команда на формирования перечня загруженных узлов в краткосрочном архиве
+        #. CODE_FIND_NODES = 11: Команда на поиск созданного узла
+        #. CODE_FIND_NODES_SYNC = 12: Команда на поиск созданного узла в режиме синхронной передачи данных
+        #. CODE_LOAD_FOR_ALGORITM = 13: Команда на загрузку данных для использования в ФБ Beremiz
+        #. CODE_SAVE_FOR_ALGORITM = 14: Команда на запись данных в алгоритме реализованном в ФБ Beremiz
+        #. CODE_EXIT = 20: Команда завершения текущей сессии работы клиента
+        #. CODE_EXIT_SERVER = 21: Команда завершения работы Сервера технологических данных
+
+    Cетевые настройки:
+        * port = 8889
+
+    Описание классификатора:
+        * ``OK``: "Command completed completely"
+        * ``CODE_START``: "Start command"
+        * ``CODE_STOP``: "Stop command"
+        * ``CODE_SINGLE_START``: "Single start command"
+        * ``CODE_SINGLE_START_SYNC``: "Single start command synchronisation with FB"
+        * ``CODE_SINGLE_START_ASYNC``: "Single start command no wait synchronisation with FB"
+        * ``CODE_LIST_NODES``: "Printing nodes list"
+        * ``CODE_FIND_NODES``: "Search nodes and objext"
+        * ``CODE_FIND_NODES_SYNC``: "Search nodes and objext synchronisation with FB"
+        * ``CODE_LOAD_FOR_ALGORITM``: "Search nodes and objext and load data of node for Algoritm"
+        * ``CODE_SAVE_FOR_ALGORITM``: "Save data from Algoritm"
+        * ``CODE_EXIT``: "Close connect Client stopped"
+        * ``CODE_EXIT_SERVER``: "Close connect Server stopped"
+        * ``CODE_NODES_OPERATION``: "Codes Error/Info for node and object"
+        * ``SEARCH_OK``: "Node and object found OK"
+        * ``SEARCH_FAIL``: "Node and object not found"
+        * ``ADD_OK``: "Add list_node/list_obj it`s OK"
+        * ``ADD_FAIL``: "Add list_node/list_obj it`s FAIL"
+        * ``UPDATE_OK``: "Update list_node/list_obj  it`s OK"
+        * ``UPDATE_FAIL``: "Update list_node/list_obj it`s FAIL"
+        * ``SET_VAL_OK``: "Set list_node/list_obj it`s OK"
+        * ``SET_VAL_FAIL``: "Set list_node/list_obj it`s FAIL"
+        * ``CODE_ALGORITM_OPERATION``: "Codes Error/Info for Algoritm"
+        * ``SET_ALGORITM_VAL_OK``: "Algoritm calculate completed"
+        * ``SET_ALGORITM_VAL_FAIL``: "Algoritm calculate it`s fail"
+        * ``SET_ALGORITM_WAIT``: "Wait for Algoritm calculated..."
+        * ``ERR``: "General error"
+
+    """
+
     def __init__(self):
-        self.code_status=0
-        self.errMessage=str("")
-        self.DELIM=str(";\r\n")
-        self.LEN_DELIM=3
+        """
+        Инициализация класса для реализации протокола CAN
+        """
+
+        self.code_status = 0
+        self.errMessage = str("")
+        self.DELIM = str(";\r\n")
+        self.LEN_DELIM = 3
         # коды блока готовности Алгоритмов и их описание
         self.CODE_ALGORITM_OPERATION = 50
-        self.SET_ALGORITM_VAL_OK = self.CODE_ALGORITM_OPERATION+PLCGlobals.SET_VAL_OK
-        self.SET_ALGORITM_VAL_FAIL = self.CODE_ALGORITM_OPERATION+PLCGlobals.SET_VAL_FAIL
-        self.SET_ALGORITM_WAIT=self.CODE_ALGORITM_OPERATION+PLCGlobals.UPDATE_FAIL
+        self.SET_ALGORITM_VAL_OK = self.CODE_ALGORITM_OPERATION + PLCGlobals.SET_VAL_OK
+        self.SET_ALGORITM_VAL_FAIL = self.CODE_ALGORITM_OPERATION + PLCGlobals.SET_VAL_FAIL
+        self.SET_ALGORITM_WAIT = self.CODE_ALGORITM_OPERATION + PLCGlobals.UPDATE_FAIL
 
         # коды i_code_answer и их описание
         self.CODE_NODES_OPERATION = 60
-        self.ADD_OK = self.CODE_NODES_OPERATION+PLCGlobals.ADD_OK
-        self.ADD_FAIL = self.CODE_NODES_OPERATION+PLCGlobals.ADD_FAIL
-        self.UPDATE_OK = self.CODE_NODES_OPERATION+PLCGlobals.UPDATE_OK
-        self.UPDATE_FAIL = self.CODE_NODES_OPERATION+PLCGlobals.UPDATE_FAIL
-        self.SET_VAL_OK = self.CODE_NODES_OPERATION+PLCGlobals.SET_VAL_OK
-        self.SET_VAL_FAIL = self.CODE_NODES_OPERATION+PLCGlobals.SET_VAL_FAIL
+        self.ADD_OK = self.CODE_NODES_OPERATION + PLCGlobals.ADD_OK
+        self.ADD_FAIL = self.CODE_NODES_OPERATION + PLCGlobals.ADD_FAIL
+        self.UPDATE_OK = self.CODE_NODES_OPERATION + PLCGlobals.UPDATE_OK
+        self.UPDATE_FAIL = self.CODE_NODES_OPERATION + PLCGlobals.UPDATE_FAIL
+        self.SET_VAL_OK = self.CODE_NODES_OPERATION + PLCGlobals.SET_VAL_OK
+        self.SET_VAL_FAIL = self.CODE_NODES_OPERATION + PLCGlobals.SET_VAL_FAIL
         self.SEARCH_FAIL = 78
         self.SEARCH_OK = 79
         self.OK = 80
         self.ERR = 99
         self.SYNTAX_ERR = 101
+
         # коды команд
         self.CODE_START = 1
         self.CODE_STOP = 2
@@ -52,6 +132,7 @@ class MesPacked():
         self.CODE_SAVE_FOR_ALGORITM = 14
         self.CODE_EXIT = 20
         self.CODE_EXIT_SERVER = 21
+
         # сетевые настройки
         self.port = 8889
         self.dict_typeData = {
@@ -88,7 +169,7 @@ class MesPacked():
             self.UPDATE_OK: "Update list_node/list_obj  it`s OK",
             self.UPDATE_FAIL: "Update list_node/list_obj it`s FAIL",
             self.SET_VAL_OK: "Set list_node/list_obj it`s OK",
-            self.SET_VAL_FAIL:"Set list_node/list_obj it`s FAIL",
+            self.SET_VAL_FAIL: "Set list_node/list_obj it`s FAIL",
             self.CODE_ALGORITM_OPERATION: "Codes Error/Info for Algoritm",
             self.SET_ALGORITM_VAL_OK: "Algoritm calculate completed",
             self.SET_ALGORITM_VAL_FAIL: "Algoritm calculate it`s fail",
@@ -154,11 +235,18 @@ class MesPacked():
             0x08000023: "Object dictionary not present or dynamic generation fails.",
             0x08000024: "No data available."}
 
-        self.nodeStruct=NodeInfo()                       # переменная узел
+        self.nodeStruct = NodeInfo()  # переменная узел
 
     def print_message(self, messageErr, key):
+        """
+        Вывод диагностических сообщений по работе приложения
+
+        :param: * messageErr: текст сообщения
+                * key: код для фильтрации сообщений
+
+        """
         if PLCGlobals.debug <= key:
-            s_print="{0:1d}:{1:<40s}".format(key,messageErr)
+            s_print = "{0:1d}:{1:<40s}".format(key, messageErr)
             print(s_print)
             sys.stdout.flush()
 
@@ -168,63 +256,70 @@ class MesPacked():
         содержащую структуру узла, с описанием объектов
         внутри применяется только для отладки, в рабочем режиме
         nodeStruct заполняется при получении данных от клиента
-        :param id_node:
-        :param idObj:
-        :param idSubObj:
-        :param d_value:
-        :return: объект типа nodeStruct
+
+        :param: * id_node: номер узла
+                * idObj: номер объекта
+                * idSubObj: номер субобъекта
+                * d_value: значение для инициализации переменной (тэга) узла
+
+        :return: nodeStruct: объект типа nodeStruct
+
         """
         nodeStruct = NodeInfo()  # переменная узел
-        nodeStruct.i_idNode=id_node
+        nodeStruct.i_idNode = id_node
         # код команды присваивается в зависимости от протокола работы узла
         nodeStruct.i_codeCommand = self.CODE_START
         # описание команды
         nodeStruct.s_command = self.dict_classif[self.nodeStruct.i_codeCommand]
         # строка получаемая из буфера
         nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
-        nodeStruct.o_obj.h_idObj=0x0+idObj
-        nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
-        nodeStruct.o_obj.i_typeData=self.dict_typeData["Double"]
-        nodeStruct.o_obj.d_value=d_value
+        nodeStruct.o_obj.h_idObj = 0x0 + idObj
+        nodeStruct.o_obj.h_idSubObj = 0x0 + idSubObj
+        nodeStruct.o_obj.i_typeData = self.dict_typeData["Double"]
+        nodeStruct.o_obj.d_value = d_value
         nodeStruct.o_Algoritm.__init__(self)
-        nodeStruct.o_Algoritm.status=self.SET_ALGORITM_VAL_FAIL
+        nodeStruct.o_Algoritm.status = self.SET_ALGORITM_VAL_FAIL
         return nodeStruct
 
-    def setAlgoritmStruct(self,i_command, i_code_answer=0):
+    def setAlgoritmStruct(self, i_command, i_code_answer=0):
         """
          метод инициализирует переменную
          содержащую структуру Алгоритма
-         :param i_command: код команды
-         :param i_code_answer: код ответа на команду (статуc), параметр опциональный
-         :return: объект типа AlgoritmInfo
+
+         :param: * i_command: код команды
+                * i_code_answer: код ответа на команду (статуc), параметр опциональный
+
+         :return: algoritmInfo: объект типа AlgoritmInfo
+
          """
-        algoritmInfo=AlgoritmInfo(i_command)
-        if i_command==self.CODE_LOAD_FOR_ALGORITM:
-            algoritmInfo.status=self.SET_ALGORITM_WAIT
-        elif i_command==self.CODE_SAVE_FOR_ALGORITM:
+        algoritmInfo = AlgoritmInfo(i_command)
+        if i_command == self.CODE_LOAD_FOR_ALGORITM:
+            algoritmInfo.status = self.SET_ALGORITM_WAIT
+        elif i_command == self.CODE_SAVE_FOR_ALGORITM:
             algoritmInfo.status = self.SET_ALGORITM_VAL_OK
         else:
             algoritmInfo.status = self.SET_ALGORITM_VAL_FAIL
         return algoritmInfo
 
-
-    def setCommandNodeStruct(self, i_command,i_code_answer=0, id_node=0, idObj=0, idSubObj=0, d_value=0):
+    def setCommandNodeStruct(self, i_command, i_code_answer=0, id_node=0, idObj=0, idSubObj=0, d_value=0):
         """
         метод для отладки инициализирует переменную
         содержащую структуру узла, с описанием объектов
         внутри применяется только для отладки, в рабочем режиме
         nodeStruct заполняется при получении данных от клиента
-        :param i_command: код команды
-        :param i_code_answer: код ответа на команду (статут)
-        :param id_node: идентификатор узла
-        :param idObj: идентификатор объекта
-        :param idSubObj: идентификатор субобъекта
-        :param d_value: значение
 
-        :return: объект типа nodeStruct
+        :param: * i_command: код команды
+                * i_code_answer: код ответа на команду (статут)
+                * id_node: идентификатор узла
+                * idObj: идентификатор объекта
+                * idSubObj: идентификатор субобъекта
+                * d_value: значение
+
+        :return: nodeStruct: объект типа nodeStruct
+
         """
         nodeStruct = NodeInfo()  # переменная узел
-        nodeStruct.i_idNode=id_node
+        nodeStruct.i_idNode = id_node
         # код команды присваивается в зависимости от протокола работы узла
         nodeStruct.i_codeCommand = i_command
         # описание команды
@@ -232,30 +327,34 @@ class MesPacked():
         # строка получаемая из буфера
         nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
         # статус ответа OK
-        if (i_code_answer==0):
-            nodeStruct.i_code_answer=self.OK
+        if (i_code_answer == 0):
+            nodeStruct.i_code_answer = self.OK
         else:
-            nodeStruct.i_code_answer=i_code_answer
+            nodeStruct.i_code_answer = i_code_answer
 
-        nodeStruct.o_obj.h_idObj=0x0+idObj
-        nodeStruct.o_obj.h_idSubObj=0x0+idSubObj
-        nodeStruct.o_obj.i_typeData=self.dict_typeData["Double"]
-        nodeStruct.o_obj.d_value=d_value
-        nodeStruct.o_Algoritm=self.setAlgoritmStruct(i_command)
+        nodeStruct.o_obj.h_idObj = 0x0 + idObj
+        nodeStruct.o_obj.h_idSubObj = 0x0 + idSubObj
+        nodeStruct.o_obj.i_typeData = self.dict_typeData["Double"]
+        nodeStruct.o_obj.d_value = d_value
+        nodeStruct.o_Algoritm = self.setAlgoritmStruct(i_command)
         return nodeStruct
 
     def setB_message(self, code_err=0, nodeStruct=NodeInfo()):
         """
         метод подготовливает 2 строки для сериализации:
-        1. b_message- упрощеная строка содержит информмацию из строкового представления
-        2. b_obj - расширенная непосредственно объект для сериализауии
-        :param code_err:
-        :param nodeStruct:
-        :return:
+            #. b_message- упрощеная строка содержит информмацию из строкового представления
+            #. b_obj - расширенная непосредственно объект для сериализауии
+
+        :param: * code_err: код ответа узла
+                * nodeStruct: объект со структурой узла
+
+        :return: * i_length: длина
+                * nodeStruct: структура сообщения
+
         """
         i_length = 0
-        if code_err==0:
-            code_err=nodeStruct.i_code_answer
+        if code_err == 0:
+            code_err = nodeStruct.i_code_answer
 
         s_message = "{0};{1};{2};{3};{4};{5};{6}".format(
             nodeStruct.i_idNode,
@@ -266,45 +365,58 @@ class MesPacked():
             nodeStruct.o_obj.i_typeData,
             nodeStruct.o_obj.d_value)
         i_length = len(s_message)
-        i_length+=len(str(i_length))
-        i_length+=self.LEN_DELIM
+        i_length += len(str(i_length))
+        i_length += self.LEN_DELIM
         nodeStruct.o_obj.s_message = "{0};{1}{2}".format(s_message, i_length, self.DELIM)
-        if  sys.version_info < (3,7):
+        if sys.version_info < (3, 7):
             nodeStruct.o_obj.b_message = bytes(nodeStruct.o_obj.s_message)
         else:
-            nodeStruct.o_obj.b_message=bytes(nodeStruct.o_obj.s_message,'utf-8')
+            nodeStruct.o_obj.b_message = bytes(nodeStruct.o_obj.s_message, 'utf-8')
         # nodeStruct.o_obj.s_message=str(nodeStruct.o_obj.b_message,'utf-8')
-        nodeStruct.o_obj.b_obj=pickle.dumps(nodeStruct,0)
-        i_length_obj=len(nodeStruct.o_obj.b_obj)
-        return i_length,nodeStruct
+        nodeStruct.o_obj.b_obj = pickle.dumps(nodeStruct, 0)
+        i_length_obj = len(nodeStruct.o_obj.b_obj)
+        return i_length, nodeStruct
 
-    def set_CRC(self,nodeStruct):
+    def set_CRC(self, nodeStruct):
         """
         метод расчитывает котрольную сумму по b_message
-        :param nodeStruct:
-        :return:
+
+        :param: nodeStruct: структура сообщения
+
+        :return: i_crc: в качестве контрольной суммы кол-во символов (байт) в телеграмме
+
         """
-        i_crc=len(nodeStruct.o_obj.b_message)
+        i_crc = len(nodeStruct.o_obj.b_message)
         return i_crc
 
-    def set_CRC_b_obj(self,nodeStruct):
+    def set_CRC_b_obj(self, nodeStruct):
         """
         метод расчитывает котрольную сумму по b_obj
-        :param nodeStruct:
-        :return:
+
+        :param: nodeStruct: структура сообщения
+
+        :return: i_crc: в качестве контрольной суммы кол-во символов (байт) в телеграмме
+
         """
-        i_crc=len(nodeStruct.o_obj.b_obj)
+        i_crc = len(nodeStruct.o_obj.b_obj)
         return i_crc
 
     def sendMessage(self, i_data, nodeStruct):
         """
-         Читаем св-ва класса и дополняем кодом ответа
-        :return:
+        Читаем св-ва класса и дополняем кодом ответа
+
+        :param: * i_data: кол-во символов в телеграмме
+                * nodeStruct: структура сообщения
+
+        :return: * i_status: код ошибки
+                * i_length: длина телеграммы
+                * nodeStruct: структура как объект
+
         """
         i_status = self.OK
-        i_length=0
-        b_message=bytes()
-        b_obj=bytes()
+        i_length = 0
+        b_message = bytes()
+        b_obj = bytes()
         if i_data >= nodeStruct.o_obj.i_check:
             if nodeStruct.i_codeCommand == self.CODE_START:
                 i_length, nodeStruct = self.setB_message(self.OK, nodeStruct)
@@ -313,10 +425,10 @@ class MesPacked():
                 i_length, nodeStruct = self.setB_message(self.OK, nodeStruct)
                 i_status = self.OK
             elif nodeStruct.i_codeCommand == self.CODE_STOP:
-                i_length, nodeStruct = self.setB_message(self.OK,nodeStruct)
+                i_length, nodeStruct = self.setB_message(self.OK, nodeStruct)
                 i_status = self.OK
         else:
-            i_length, nodeStruct = self.setB_message(self.ERR,nodeStruct)
+            i_length, nodeStruct = self.setB_message(self.ERR, nodeStruct)
             i_status = self.ERR
 
         return i_status, i_length, nodeStruct
@@ -324,15 +436,19 @@ class MesPacked():
     def recvMessage(self, data, nodeStruct):
         """
         Метод принимает строку байт от клиента и проверяет на целостность данных
-        :param data: байтовая строка
-        :nodeStruct: объект nodeStruct
-        :return: код ошибки, обработанный объект nodeStruct
+
+        :param: * data: байтовая строка
+                * nodeStruct: объект nodeStruct
+
+        :return: * i_status: код ошибки
+                * NodeInfo(): обработанный объект nodeStruct
+
         """
-        if len(data)>1:
+        if len(data) > 1:
             i_status = self.OK
             parse_str = re.split("[b';\r\n\s]", data)
             i_data = len(data)
-            nodeStruct=self.readData(parse_str, nodeStruct)
+            nodeStruct = self.readData(parse_str, nodeStruct)
             nodeStruct.s_message = "{0}:{1:d}:{2}".format(object.__name__, nodeStruct.o_obj.i_check, parse_str)
             self.print_message(nodeStruct.s_message, PLCGlobals.INFO)
             i_status, \
@@ -345,21 +461,25 @@ class MesPacked():
     def recvMessageNode(self, data):
         """
         Метод принимает строку байт от клиента и проверяет на целостность данных
-        :param data: байтовая строка
-        :return: код ошибки, nodeStruct
+
+        :param: data: байтовая строка
+
+        :return: * i_status: код ошибки
+                * NodeInfo(): обработанный объект nodeStruct
+
         """
-        if len(data)>1:
+        if len(data) > 1:
             i_status = self.OK
             parse_str = re.split("[b';\r\n]", data)
             i_data = len(data)
-            nodeStruct=self.readDataNodeStruct(parse_str)
+            nodeStruct = self.readDataNodeStruct(parse_str)
             self.errMessage = "{0}:{1:d}:{2}".format(object.__name__,
-                                                          nodeStruct.o_obj.i_check,
-                                                          parse_str)
+                                                     nodeStruct.o_obj.i_check,
+                                                     parse_str)
             self.print_message(self.errMessage, PLCGlobals.INFO)
             i_status, \
             i_length, \
-            self.nodeStruct = self.sendMessage(i_data,nodeStruct)
+            self.nodeStruct = self.sendMessage(i_data, nodeStruct)
 
             return i_status, nodeStruct
         else:
@@ -367,10 +487,13 @@ class MesPacked():
 
     def setValue(self, strValue, nodeStruct):
         """
-           Метод проверяет тип данных значения и устанавливает соответсвующий тип данных
-           :param strValue: строка для парсера
-           :return: nodeStruct
-           """
+        Метод проверяет тип данных значения и устанавливает соответсвующий тип данных
+
+        :param: strValue: строка для парсера
+
+        :return: nodeStruct: заполненная структура узла
+
+        """
         i_status = self.OK
         if isinstance(strValue, int):
             nodeStruct.o_obj.i_typeData = self.dict_typeData["Integer"]
@@ -395,12 +518,16 @@ class MesPacked():
 
     def setValueNodeStruct(self, strValue):
         """
-           Метод проверяет тип данных значения и устанавливает соответсвующий тип данных
-           :param strValue: строка для парсера
-           :return:i_typeData, d_value
-           """
-        i_typeData=0
-        d_value=0
+        Метод проверяет тип данных значения и устанавливает соответсвующий тип данных
+
+        :param: strValue: строка для парсера
+
+        :return: * i_typeData: тип данных описание см. в классификаторе
+                * d_value: значение тэга узла
+
+        """
+        i_typeData = 0
+        d_value = 0
         if isinstance(strValue, int):
             i_typeData = self.dict_typeData["Integer"]
             d_value = int(strValue)
@@ -427,25 +554,32 @@ class MesPacked():
         метод устанавливает значение d_value, используется для отладки
         d_value необязательный аргумент, если не указывается то присваивается
         случайным образом в диапазоне 0-1
-        :param nodeStruct:
-        :param d_value:
-        :return:
+
+        :param: * nodeStruct: структура узла
+                * d_value: значение которое записывается в тэг узла
+
+        :return: nodeStruct: заполненная структура узла
+
         """
         if d_value == 0:
             nodeStruct.o_obj.d_value *= random.random()
         else:
-            nodeStruct.o_obj.d_value=d_value
+            nodeStruct.o_obj.d_value = d_value
         return nodeStruct
 
     def readData(self, stringData, nodeStruct):
         """
         Метод парсит телеграмму от клиента раскладывает ее в поля
-        :param stringData: в соответствии с принятым соглашением по телеграмме
-        :nodeStruct:
-        :return: i_status, nodeStruct
+
+        :param: * stringData: в соответствии с принятым соглашением по телеграмме
+                * nodeStruct: структура узла
+
+        :return * i_status: код ошибки, заполненная структура узла
+                * nodeStruct: заполненная структура узла
+
         """
         length = len(stringData)
-        index=0
+        index = 0
         for i in range(length):
             if len(stringData[i]) > 0:
                 for case in switch(index):
@@ -467,7 +601,7 @@ class MesPacked():
                     if case(5):
                         break
                     if case(6):
-                        nodeStruct=self.setValue(stringData[i],nodeStruct)
+                        nodeStruct = self.setValue(stringData[i], nodeStruct)
                         # для отладки после убрать, поскольку запускаем без параметр, будет проставляться random()
                         # nodeStruct=self.setD_value(nodeStruct)
                         break
@@ -476,20 +610,23 @@ class MesPacked():
                         break
                     if case():
                         break
-                index+=1
+                index += 1
         return nodeStruct
 
     def readDataNodeStruct(self, stringData):
         """
         Метод парсит телеграмму от клиента раскладывает ее в поля
         данные записываются в переменную nodeStruct, содержащую строктуру узла и объекта
-        :param stringData: в соответствии с принятым соглашением по телеграмме
-        :return:nodeStruct
+
+        :param: stringData: в соответствии с принятым соглашением по телеграмме
+
+        :return: nodeStruct: заполненная структура узла
+
         """
         i_status = self.OK
         length = len(stringData)
-        nodeStruct=NodeInfo()
-        index=0
+        nodeStruct = NodeInfo()
+        index = 0
         for i in range(length):
             if len(stringData[i]) > 0:
                 for case in switch(index):

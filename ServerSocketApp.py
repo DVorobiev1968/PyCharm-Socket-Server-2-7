@@ -11,17 +11,29 @@ from Nodes import Nodes
 
 
 class ServerThread(Thread):
+    """
+    Базовый класс для предоставления сервисов управления потоками для приложения
+
+    * lock: глобаный объект для управления блоктровками для глобальных переменных потоков
+    * i_commandCode: глобальная переменная типа int задает код команды от клиента, с целью управления сессией клиента
+
+    :param: * name: Имя потока
+            * conn: Объект образуемый от sock.accept(), получаем коннект
+            * addr: Адрес host
+
+    """
     global nodes
 
     def __init__(self, name, conn, addr):
         """
         Иницилизируем необходимые св-ва класса:
+
         :param: name Имя потока
         :param: conn Объект образуемый от sock.accept(), получаем коннект
         :param: addr Адрес host
-        :param: lock Управление блоктровками для глобальных переменных потоков
-        :param: i_commandCode Код команды от клиента, с целью управления сессией клиента
-        :rtype: object Используемый при исполнении потока
+
+        :return: object Используемый при исполнении потока
+
         """
         Thread.__init__(self)
         self.name = name
@@ -46,10 +58,13 @@ class ServerThread(Thread):
     def loadObjs(self, index_node, nodes, nodeStruct):
         """
         Метод сохранения объекта в узле в краткосрочном хранилище
-        :param: index_node: индекс в списке узлов
-        :param: nodes: объект - класс узел
-        :param: nodeStruct: объект - класс узел, промежуточный для межсетевого обмена
-        :rtype: список: list_nodes
+
+        :param: * index_node: индекс в списке узлов
+                * nodes: объект - класс узел
+                * nodeStruct: объект - класс узел, промежуточный для межсетевого обмена
+
+        :return: список: list_nodes
+
         """
         i_status, list_obj = nodes.set_val_obj(nodes.list_nodes[index_node]['Objs'], nodeStruct)
 
@@ -59,8 +74,9 @@ class ServerThread(Thread):
         """
         Метод сохраняет узел в краткосрочном хранилище через глобальную переменную nodes
         при сохранении заполняются все св-ва только класса NodeInfo
+
         :param nodeStruct: переменная со структурой узла
-        :return:
+
         """
         global nodes
 
@@ -80,8 +96,9 @@ class ServerThread(Thread):
         """
         Метод сохраняет узел в краткосрочном хранилище через глобальную переменную nodes
         при сохранении заполняются все св-ва классов NodeInfo, NodeInfoObj
+
         :param nodeStruct: переменная со структурой узла
-        :return:
+
         """
         global nodes
 
@@ -105,9 +122,10 @@ class ServerThread(Thread):
     def save_node(self, i_status, nodeStruct):
         """
         Метод записывает данные по узлу и объекту в краткосрочный архив
-        :param i_status: код ошибки получения ответа, его будем ассоциировать с i_code_answer
-        :param nodeStruct: объект с данными по узлу
-        :return:
+
+        :param: * i_status: код ошибки получения ответа, его будем ассоциировать с i_code_answer
+                * nodeStruct: объект с данными по узлу
+
         """
         if i_status == mesPacked.OK:
             self.set_nodes_obj(nodeStruct)
@@ -119,9 +137,10 @@ class ServerThread(Thread):
         метод обрабатывает входное сообщение от клиента и готовит ответ,
         при этом проверяя контрольную сумму
         пока от клиента не придет i_codeCommand=CODE_STOP
-        :param stdin:
-        :param stdout:
-        :return:
+
+        :param: * stdin: буфферизированный входной поток для чтения данных из сокета
+                * stdout: буфферизированный выходной поток для записи данных в сокет
+
         """
 
         data = stdin.readline()

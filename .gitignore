@@ -1,9 +1,9 @@
 venv
-*/Example
+Example
 *.log
 *.txt
 *.odt
 *.xls*
 *.xml
 *.iml
-
+build
