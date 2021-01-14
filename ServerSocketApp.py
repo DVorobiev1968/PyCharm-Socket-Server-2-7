@@ -212,32 +212,21 @@ class ServerThread(Thread):
                     mesPacked.print_message("Error in s_message:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
                 data = stdin.readline()
             elif nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START_SYNC:
-                i_node, i_obj = nodes.find_node(nodeStruct.i_idNode)
-                if i_node != nodes.FIND_NODE_ERR:
-                    algoritm_status = nodes.list_nodes[i_node]['Algoritm'].status
-                    if algoritm_status == mesPacked.SET_ALGORITM_VAL_OK:
-                        self.lock.acquire()
-                        self.save_node(i_status, nodeStruct)
-                        self.lock.release()
-                        nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
-                        stdout.write(nodeStruct.o_obj.s_message)
-                        mesPacked.print_message("CODE_SINGLE_START_SYNC->:{0}".format(nodeStruct.o_obj.s_message),
-                                                PLCGlobals.BREAK_DEBUG)
-                    elif algoritm_status == mesPacked.SET_ALGORITM_WAIT:
-                        f_sleep=0.020
-                        mesPacked.print_message("CODE_SINGLE_START_SYNC->:{0},sleeping{1:1.3f}".format(nodeStruct.o_obj.s_message,f_sleep),
-                                                PLCGlobals.INFO)
-                        sleep(f_sleep)
-                    elif nodes.list_nodes[i_node]['Algoritm'].status == mesPacked.SET_ALGORITM_VAL_FAIL:
-                        nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
-                        stdout.write(nodeStruct.o_obj.s_message)
-                        mesPacked.print_message("CODE_SINGLE_START_SYNC->:{0}".format(nodeStruct.o_obj.s_message),
-                                                PLCGlobals.ERROR)
-                        break
-                    else:
-                        pass
+                if i_status == mesPacked.OK:
+                    nodeStruct.o_Algoritm = AlgoritmInfo(mesPacked.SET_ALGORITM_VAL_OK)
+                    self.lock.acquire()
+                    self.save_node(i_status, nodeStruct)
+                    self.lock.release()
+                    nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
+                    stdout.write(nodeStruct.o_obj.s_message)
+                    mesPacked.print_message("CODE_SINGLE_START_SYNC->:{0}".format(nodeStruct.o_obj.s_message),
+                                            PLCGlobals.BREAK_DEBUG)
                 else:
-                    pass
+                    mesPacked.setB_message(i_status, nodeStruct)
+                    stdout.write(nodeStruct.o_obj.s_message)
+                    mesPacked.print_message("Error:CODE_SINGLE_START_SYNC->:{0}".format(nodeStruct.o_obj.s_message),
+                                            PLCGlobals.ERROR)
+                break
             elif nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START:
                 if i_status == mesPacked.OK:
                     self.lock.acquire()
