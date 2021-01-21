@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys, getopt, socket, random
+from datetime import timedelta, datetime
 from threading import Thread, Lock
 from time import sleep
 
@@ -213,7 +214,23 @@ class ServerThread(Thread):
                 data = stdin.readline()
             elif nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START_SYNC:
                 if i_status == mesPacked.OK:
+                    i_node, i_obj = nodes.find_node_obj(nodeStruct.i_idNode, nodeStruct.o_obj.h_idObj)
+                    if i_node != nodes.FIND_NODE_ERR:
+                        i_code_answer = nodes.list_nodes[i_node]["Algoritm"].status
+                        while i_code_answer == mesPacked.SET_ALGORITM_WAIT:
+                            cur_dateTime = datetime.now()
+                            sleep(0.02)
+                            i_node, i_obj = nodes.find_node_obj(nodeStruct.i_idNode, nodeStruct.o_obj.h_idObj)
+                            i_code_answer = nodes.list_nodes[i_node]["Algoritm"].status
+                            algoritm_date= nodes.list_nodes[i_node]["Algoritm"].dateTime
+                            period=cur_dateTime-algoritm_date
+                            if period.total_seconds() > 60:
+                                break
+                    else:
+                        i_code_answer=mesPacked.SEARCH_FAIL
+
                     nodeStruct.o_Algoritm = AlgoritmInfo(mesPacked.SET_ALGORITM_VAL_OK)
+                    i_length, nodeStruct = mesPacked.setB_message(i_code_answer, nodeStruct)
                     self.lock.acquire()
                     self.save_node(i_status, nodeStruct)
                     self.lock.release()
@@ -378,6 +395,7 @@ def main_thread(host, port):
     sock.listen(10)
     PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.WARNING)
+    # PLCGlobals.debug = PLCGlobals.ERROR
 
     while 1:
         (conn, addr) = sock.accept()

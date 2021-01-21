@@ -10,8 +10,9 @@ class AlgoritmInfo():
 
         """
         self.status = status
-        if status!=55:
-            self.dateTime = datetime.datetime.now()
+        self.dateTime=datetime.datetime.now()
+        # if status!=55:
+        #     self.dateTime = datetime.datetime.now()
     def __repr__(self):
         return "{0};{1}".format(self.status,self.dateTime.strftime("%d.%m.%Y %H:%M:%S.%f"))
     def __str__(self):
