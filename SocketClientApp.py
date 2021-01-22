@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import getopt, sys
 from time import sleep
 
@@ -39,9 +40,10 @@ def loadParameters():
 module=sys.argv[0].split('/')[-1].split('.')[0]
 sys_info="Starting {0} from Python:{1}.{2}\n".format(module,sys.version_info.major, sys.version_info.minor)
 print (sys_info)
-PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
+# PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
+PLCGlobals.debug = PLCGlobals.ERROR
 loadParameters()
-d_value=socketClient.set_socket_node(1,0x1000,socketClient.mesPacked.CODE_SINGLE_START,0.0)
+d_value=socketClient.set_socket_node(1,0x1000,socketClient.mesPacked.CODE_SINGLE_START,10.01)
 # d_value=socketClient.set_socket_node(2,0x1000,socketClient.mesPacked.CODE_SINGLE_START,0.01)
 # socketClient.mesPacked.print_message("socketClient.set_socket_node:{0:4.10f}".format(d_value), PLCGlobals.INFO)
 # d_value_3=socketClient.load_socket_node(1, 0x1000)

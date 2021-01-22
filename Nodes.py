@@ -361,7 +361,8 @@ class Nodes():
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case("Objs"):
-                        self.list_nodes[i]["Objs"]=value
+                        list_objs=list(value)
+                        self.list_nodes[i]["Objs"]=copy.deepcopy(list_objs)
                         i_status = PLCGlobals.SET_VAL_OK
                         break
                     if case("Algoritm"):
@@ -468,6 +469,49 @@ class Nodes():
                 )
                 self.mesPacked.print_message(str_node_info,PLCGlobals.INFO)
 
+    def print_list_nodes_csv(self):
+        """
+        метод вывод информацию по всем сформированным узлам и объектам в формате csv,
+        для отладки просмотра d_value
+
+        """
+        length = len(self.list_nodes)
+        str_node_info = "i_idNode;h_idObj(DEC);h_idObj(HEX);" \
+                        "h_idSubObj(DEC);h_idSubObj(HEX);" \
+                        "i_code_answer;i_codeCommand;" \
+                        "s_commands;" \
+                        "s_message;" \
+                        "Algoritm;" \
+                        "d_value;" \
+                        "i_typeData;" \
+                        "b_message"
+        self.mesPacked.print_message(str_node_info, PLCGlobals.INFO+PLCGlobals.NO_HEAD)
+
+        for i in range(length):
+            len_objs=len(self.list_nodes[i]["Objs"])
+            for j in range(len_objs):
+                str_node_info = "{0:d};{1:d};{1:X};" \
+                                "{2:d};{2:X};" \
+                                "{3:d};{4:d};" \
+                                "{5:<20s};" \
+                                "{6:<20s};" \
+                                "{7:<20s};"\
+                                "{8:4.10f};" \
+                                "{9:d};" \
+                                "{10}".format(
+                    self.list_nodes[i]['i_idNode'],
+                    self.list_nodes[i]["Objs"][j]['h_idObj'],
+                    self.list_nodes[i]["Objs"][j]['h_idSubObj'],
+                    self.list_nodes[i]["i_code_answer"],
+                    self.list_nodes[i]["i_codeCommand"],
+                    self.list_nodes[i]["s_command"],
+                    self.list_nodes[i]["s_message"],
+                    self.list_nodes[i]["Algoritm"].__str__(),
+                    self.list_nodes[i]["Objs"][j]['d_value'],
+                    self.list_nodes[i]["Objs"][j]['i_typeData'],
+                    self.list_nodes[i]["Objs"][j]['b_message'])
+                self.mesPacked.print_message(str_node_info,PLCGlobals.INFO+PLCGlobals.NO_HEAD)
+
     def printInfoNodes(self):
         """
         метод печатает информацию по узлу и объекту
@@ -502,8 +546,9 @@ def loadObjs(index_node,nodes):
         i_idNode=nodes.list_nodes[index_node]['i_idNode']
         h_idObj=0x1000+random.randint(1,10)
         h_idSubObj=0x0+i
-        d_value=random.random()
+        d_value=random.random()+h_idObj
         nodeStruct=nodes.mesPacked.initNodeStruct(i_idNode,h_idObj,h_idSubObj,d_value)
+        # list_nodeStruct=copy.deepcopy(nodeStruct)
         nodes.set_val_obj(nodes.list_nodes[index_node]['Objs'],nodeStruct)
 
     return nodes.list_nodes[index_node]['Objs']
@@ -555,9 +600,11 @@ if __name__ == '__main__':
             nodes.list_nodes[i]['Objs'][i_obj]['b_message']
         )
         nodes.mesPacked.print_message(str_node_info, PLCGlobals.INFO)
+    else:
+        nodes.mesPacked.print_message("Error: nodes.find_node_obj({0},{1}): Node not found".format(id_node,id_nodeObj), PLCGlobals.ERROR)
 
-    nodes.print_list_nodes()
-    str_node_info=nodes.readInfoNodes()
-    nodes.mesPacked.print_message(str_node_info, PLCGlobals.INFO)
-
+    # nodes.print_list_nodes()
+    # str_node_info=nodes.readInfoNodes()
+    # nodes.mesPacked.print_message(str_node_info, PLCGlobals.INFO)
+    nodes.print_list_nodes_csv()
 

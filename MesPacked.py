@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import re, random, sys, pickle
+import re, random, sys, pickle, copy
 
 if sys.version_info < (3, 7):
     from numpy.core import double
@@ -245,8 +245,16 @@ class MesPacked():
                 * key: код для фильтрации сообщений
 
         """
+        key_head=key-PLCGlobals.NO_HEAD
+        head=True
+        if key_head > 0:
+            head=False
+            key=key_head
         if PLCGlobals.debug <= key:
-            s_print = "{0:1d}:{1:<40s}".format(key, messageErr)
+            if head:
+                s_print = "{0:1d}:{1:<40s}".format(key, messageErr)
+            else:
+                s_print = "{1:<40s}".format(key, messageErr)
             print(s_print)
             sys.stdout.flush()
 
@@ -273,13 +281,14 @@ class MesPacked():
         nodeStruct.s_command = self.dict_classif[self.nodeStruct.i_codeCommand]
         # строка получаемая из буфера
         nodeStruct.s_message = self.dict_classif[self.nodeStruct.i_codeCommand]
+        nodeStruct.o_obj.__init__()
         nodeStruct.o_obj.h_idObj = 0x0 + idObj
         nodeStruct.o_obj.h_idSubObj = 0x0 + idSubObj
         nodeStruct.o_obj.i_typeData = self.dict_typeData["Double"]
         nodeStruct.o_obj.d_value = d_value
         nodeStruct.o_Algoritm.__init__(self)
         nodeStruct.o_Algoritm.status = self.SET_ALGORITM_VAL_FAIL
-        return nodeStruct
+        return copy.deepcopy(nodeStruct)
 
     def setAlgoritmStruct(self, i_command, i_code_answer=0):
         """
@@ -487,7 +496,7 @@ class MesPacked():
 
     def setValue(self, strValue, nodeStruct):
         """
-        Метод проверяет тип данных значения и устанавливает соответсвующий тип данных
+        Метод проверяет тип данных значения и устанавливает соответствующий тип данных
 
         :param: strValue: строка для парсера
 

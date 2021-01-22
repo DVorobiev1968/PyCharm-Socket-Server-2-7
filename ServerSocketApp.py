@@ -117,7 +117,8 @@ class ServerThread(Thread):
 
         if i_status == PLCGlobals.ADD_OK or i_status == nodes.mesPacked.ADD_OK or \
                 i_status == PLCGlobals.UPDATE_OK or i_status == nodes.mesPacked.UPDATE_OK:
-            index = len(nodes.list_nodes) - 1
+            if i_status!=nodes.mesPacked.UPDATE_OK:
+                index = len(nodes.list_nodes) - 1
             nodes.set_val(nodeStruct.i_idNode, "Objs", self.loadObjs(index, nodes, nodeStruct))
 
     def save_node(self, i_status, nodeStruct):
@@ -161,11 +162,13 @@ class ServerThread(Thread):
                 if i_status == mesPacked.OK:
                     mesPacked.print_message("CODE_SAVE_FOR_ALGORITM<-:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                     mesPacked.setB_message(nodeStruct.o_Algoritm.status,nodeStruct)
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("CODE_SAVE_FOR_ALGORITM->{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 else:
                     mesPacked.setB_message(i_status,nodeStruct)
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("Error:CODE_SAVE_FOR_ALGORITM->{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
                 break
 
@@ -190,11 +193,13 @@ class ServerThread(Thread):
                                                    nodeStruct.o_Algoritm.status), PLCGlobals.INFO)
 
                     mesPacked.setB_message(nodeStruct.o_Algoritm.status,nodeStruct)
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("CODE_LOAD_FOR_ALGORITM->{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 else:
                     mesPacked.setB_message(i_status,nodeStruct)
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("Error:CODE_LOAD_FOR_ALGORITM->{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
                 nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
                 break
@@ -205,7 +210,8 @@ class ServerThread(Thread):
                 if i_status == mesPacked.OK:
                     mesPacked.print_message("CODE_START<-:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                     mesPacked.setB_message(i_status,nodeStruct)
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("CODE_START->:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 else:
                     mesPacked.setB_message(i_status,nodeStruct)
@@ -228,6 +234,7 @@ class ServerThread(Thread):
                                 break
                     else:
                         i_code_answer=mesPacked.SEARCH_FAIL
+                        nodeStruct.i_code_answer=i_code_answer
 
                     nodeStruct.o_Algoritm = AlgoritmInfo(mesPacked.SET_ALGORITM_VAL_OK)
                     i_length, nodeStruct = mesPacked.setB_message(i_code_answer, nodeStruct)
@@ -235,12 +242,14 @@ class ServerThread(Thread):
                     self.save_node(i_status, nodeStruct)
                     self.lock.release()
                     nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("CODE_SINGLE_START_SYNC->:{0}".format(nodeStruct.o_obj.s_message),
                                             PLCGlobals.BREAK_DEBUG)
                 else:
                     mesPacked.setB_message(i_status, nodeStruct)
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("Error:CODE_SINGLE_START_SYNC->:{0}".format(nodeStruct.o_obj.s_message),
                                             PLCGlobals.ERROR)
                 break
@@ -250,12 +259,14 @@ class ServerThread(Thread):
                     self.save_node(i_status, nodeStruct)
                     self.lock.release()
                     nodeStruct.i_codeCommand = mesPacked.CODE_EXIT
-                    stdout.write(nodeStruct.o_obj.s_message)
-                    mesPacked.print_message("CODE_SINGLE_START->{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
+                    mesPacked.print_message("CODE_SINGLE_START->:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 else:
                     mesPacked.setB_message(i_status,nodeStruct)
-                    stdout.write(nodeStruct.o_obj.s_message)
-                    mesPacked.print_message("Error:CODE_SINGLE_START->{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
+                    mesPacked.print_message("Error:CODE_SINGLE_START->:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
                 break
             elif nodeStruct.i_codeCommand == mesPacked.CODE_LIST_NODES:
                 mesPacked.print_message("Start listing nodes, recieve code:{0}...".format(nodeStruct.i_codeCommand),
@@ -266,13 +277,15 @@ class ServerThread(Thread):
                 mesPacked.print_message("CODE_STOP:{0}...".format(nodeStruct.i_codeCommand),
                                         PLCGlobals.INFO)
                 mesPacked.setCommandNodeStruct(mesPacked.CODE_STOP)
-                stdout.write(nodeStruct.o_obj.s_message)
+                if len(nodeStruct.o_obj.s_message) > 1:
+                    stdout.write(nodeStruct.o_obj.s_message)
                 mesPacked.print_message("CODE_STOP->:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                 break
             elif nodeStruct.i_codeCommand == mesPacked.CODE_EXIT:
                 mesPacked.print_message("CODE_EXIT:{0}...".format(nodeStruct.i_codeCommand), PLCGlobals.INFO)
                 mesPacked.setCommandNodeStruct(mesPacked.CODE_EXIT)
-                stdout.write(nodeStruct.o_obj.s_message)
+                if len(nodeStruct.o_obj.s_message) > 1:
+                    stdout.write(nodeStruct.o_obj.s_message)
                 mesPacked.print_message("CODE_EXIT->:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                 break
             elif nodeStruct.i_codeCommand == mesPacked.CODE_FIND_NODES:
@@ -312,10 +325,16 @@ class ServerThread(Thread):
                                                                 nodes.list_nodes[i_node]["Objs"][i_obj]["h_idObj"],
                                                                 nodes.list_nodes[i_node]["Objs"][i_obj]["h_idSubObj"],
                                                                 nodes.list_nodes[i_node]["Objs"][i_obj]["d_value"])
+                    nodeStruct.o_Algoritm = AlgoritmInfo(mesPacked.SET_ALGORITM_WAIT)
+                    self.lock.acquire()
+                    self.save_node(mesPacked.SET_ALGORITM_WAIT, nodeStruct)
+                    self.lock.release()
+
                     i_length, nodeStruct = mesPacked.setB_message(i_code_answer, nodeStruct)
                     mesPacked.print_message("CODE_FIND_NODES_SYNC.i_code_answer:{0}".
                                             format(i_code_answer), PLCGlobals.BREAK_DEBUG)
-                    stdout.write(nodeStruct.o_obj.s_message)
+                    if len(nodeStruct.o_obj.s_message) > 1:
+                        stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("CODE_FIND_NODES_SYNC.SET_ALGORITM_VAL_OK->:{0}".format(nodeStruct.o_obj.s_message),
                                             PLCGlobals.BREAK_DEBUG)
                     break
@@ -392,10 +411,10 @@ def main_thread(host, port):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind((host, port))
-    sock.listen(10)
+    sock.listen(1000)
     PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.WARNING)
-    # PLCGlobals.debug = PLCGlobals.ERROR
+    PLCGlobals.debug = PLCGlobals.ERROR
 
     while 1:
         (conn, addr) = sock.accept()

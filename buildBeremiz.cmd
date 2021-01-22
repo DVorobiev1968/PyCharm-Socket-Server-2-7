@@ -1,4 +1,5 @@
 @echo off
+chcp 1251> nul
 set BEREMIZ_LIB=C:\Users\user26\Beremiz-1.2\python\Lib\user
 set HOME_PROJECT=%CD%
 cd %BEREMIZ_LIB%
@@ -11,4 +12,6 @@ copy /Y %HOME_PROJECT%\Nodes.py %BEREMIZ_LIB%\Nodes.py
 copy /Y %HOME_PROJECT%\PLCGlobals.py %BEREMIZ_LIB%\PLCGlobals.py
 copy /Y %HOME_PROJECT%\SocketClient.py %BEREMIZ_LIB%\SocketClient.py
 copy /Y %HOME_PROJECT%\switch.py %BEREMIZ_LIB%\switch.py
+copy /Y %HOME_PROJECT%\ServerSocketApp.py %BEREMIZ_LIB%\ServerSocketApp.py
+copy /Y %HOME_PROJECT%\ServerSocketApp.bat %BEREMIZ_LIB%\ServerSocketApp.bat
 @echo on

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import socket, sys
+from time import sleep
 
 if sys.version_info < (3, 7):
     from twisted.internet.error import ConnectionRefusedError
@@ -66,15 +67,22 @@ class SocketClient():
                 b_message = "set_socket_node:<-:{0}".format(nodeStruct.o_obj.b_message)
                 self.mesPacked.print_message(b_message, PLCGlobals.INFO)
             sock.close()
+
         except ConnectionRefusedError as err_message:
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
+            return 0
 
-        def get_value():
-            if i_status==self.mesPacked.OK:
-                return nodeStruct.o_obj.d_value
-            else:
-                return 0
-        return  get_value()
+        except IOError as err_message:
+            self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
+            return 0
+
+        finally:
+            def get_value():
+                if i_status==self.mesPacked.OK:
+                    return nodeStruct.o_obj.d_value
+                else:
+                    return 0
+            return  get_value()
 
     def load_for_algoritm(self, id_Node, id_Obj, idSubObj=0):
         """
@@ -90,6 +98,7 @@ class SocketClient():
 
         """
         try:
+            i_status=self.mesPacked.SET_VAL_FAIL
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             nodeStruct = NodeInfo()
             i_code_answer = self.mesPacked.SET_ALGORITM_WAIT
@@ -123,12 +132,17 @@ class SocketClient():
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
             return 0
 
-        def get_value():
-            if i_status==self.mesPacked.OK:
-                return nodeStruct.o_obj.d_value
-            else:
-                return 0
-        return  get_value()
+        except IOError as err_message:
+            self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
+            return 0
+
+        finally:
+            def get_value():
+                if i_status==self.mesPacked.OK:
+                    return nodeStruct.o_obj.d_value
+                else:
+                    return 0
+            return  get_value()
 
     def save_for_algoritm(self, id_Node, id_Obj, d_value=0, idSubObj=0):
         """
@@ -142,6 +156,7 @@ class SocketClient():
                 * nodeStruct: заполненная структура узла
         """
         try:
+            i_status=self.mesPacked.SET_VAL_FAIL
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             nodeStruct = NodeInfo()
             i_code_answer = self.mesPacked.SET_ALGORITM_VAL_OK
@@ -177,12 +192,17 @@ class SocketClient():
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
             return 0
 
-        def get_value():
-            if i_status==self.mesPacked.OK:
-                return nodeStruct.o_obj.d_value
-            else:
-                return 0
-        return  get_value()
+        except IOError as err_message:
+            self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
+            return 0
+
+        finally:
+            def get_value():
+                if i_status==self.mesPacked.OK:
+                    return nodeStruct.o_obj.d_value
+                else:
+                    return 0
+            return  get_value()
 
     def load_socket_node(self, id_Node, id_Obj, idSubObj=0):
         """
@@ -196,6 +216,7 @@ class SocketClient():
                 * nodeStruct: заполненная структура узла
         """
         try:
+            i_status=self.mesPacked.SET_VAL_FAIL
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             nodeStruct = NodeInfo()
             i_code_answer = 0
@@ -231,9 +252,14 @@ class SocketClient():
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
             return 0
 
-        def get_value():
-            if i_status==self.mesPacked.OK:
-                return nodeStruct.o_obj.d_value
-            else:
-                return 0
-        return  get_value()
+        except IOError as err_message:
+            self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
+            return 0
+
+        finally:
+            def get_value():
+                if i_status==self.mesPacked.OK:
+                    return nodeStruct.o_obj.d_value
+                else:
+                    return 0
+            return  get_value()
