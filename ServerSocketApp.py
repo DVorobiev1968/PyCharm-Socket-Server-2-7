@@ -211,11 +211,12 @@ class ServerThread(Thread):
                     mesPacked.print_message("CODE_START<-:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                     mesPacked.setB_message(i_status,nodeStruct)
                     if len(nodeStruct.o_obj.s_message) > 1:
-                        stdout.write(nodeStruct.o_obj.s_message)
+                        pass
+                    stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("CODE_START->:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
                 else:
                     mesPacked.setB_message(i_status,nodeStruct)
-                    stdout.writeln(nodeStruct.o_obj.s_message)
+                    stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("Error in s_message:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
                 data = stdin.readline()
             elif nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START_SYNC:

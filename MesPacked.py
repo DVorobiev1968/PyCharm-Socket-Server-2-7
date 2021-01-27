@@ -3,13 +3,22 @@
 import re, random, sys, pickle, copy
 
 if sys.version_info < (3, 7):
-    from numpy.core import double
+    if sys.platform == "linux" or sys.platform == "linux2":
+        pass
+    elif sys.platform == "darwin":
+        pass
+    elif sys.platform == "win32":
+        from numpy.core import double
 else:
-    from decimal import Decimal
-
-
-    def double(arg):
-        return Decimal(arg)
+    if sys.platform == "linux" or sys.platform == "linux2":
+        def double(arg):
+            return float(arg)
+    elif sys.platform == "darwin":
+        pass
+    elif sys.platform == "win32":
+        from decimal import Decimal
+        def double(arg):
+            return Decimal(arg)
 
 from switch import switch
 from PLCGlobals import PLCGlobals
