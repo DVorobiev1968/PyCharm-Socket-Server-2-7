@@ -5,7 +5,7 @@ from time import sleep
 
 if sys.version_info < (3, 7):
     if sys.platform == "linux" or sys.platform == "linux2":
-        pass
+        from twisted.internet.error import ConnectionRefusedError
     elif sys.platform == "darwin":
         pass
     elif sys.platform == "win32":
@@ -140,6 +140,10 @@ class SocketClient():
                 self.mesPacked.print_message(err_message, PLCGlobals.ERROR)
                 d_value = 0.0
             sock.close()
+
+        except ConnectionRefusedError as err_message:
+            self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)
+            return 0
 
         except IOError as err_message:
             self.mesPacked.print_message(err_message.strerror, PLCGlobals.ERROR)

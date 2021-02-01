@@ -3,7 +3,8 @@ import copy, random, sys
 
 if sys.version_info < (3, 7):
     if sys.platform == "linux" or sys.platform == "linux2":
-        pass
+        def double(arg):
+            return float(arg)
     elif sys.platform == "darwin":
         pass
     elif sys.platform == "win32":

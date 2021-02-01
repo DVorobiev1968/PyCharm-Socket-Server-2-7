@@ -1,5 +1,4 @@
 @echo off
-chcp 1251> nul
 set BEREMIZ_LIB=C:\Users\user26\Beremiz-1.2\python\Lib\user
 set HOME_PROJECT=%CD%
 cd %BEREMIZ_LIB%

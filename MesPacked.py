@@ -4,7 +4,8 @@ import re, random, sys, pickle, copy
 
 if sys.version_info < (3, 7):
     if sys.platform == "linux" or sys.platform == "linux2":
-        pass
+        def double(arg):
+            return float(arg)
     elif sys.platform == "darwin":
         pass
     elif sys.platform == "win32":
@@ -664,7 +665,7 @@ class MesPacked():
                         nodeStruct.o_obj.h_idSubObj = int(stringData[i])
                         break
                     if case(5):
-                        # nodeStruct.o_obj.i_typeData = int(stringData[i])
+                        #nodeStruct.o_obj.i_typeData = int(stringData[i])
                         break
                     if case(6):
                         nodeStruct.o_obj.i_typeData, \
