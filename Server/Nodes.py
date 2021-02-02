@@ -565,7 +565,7 @@ def loadObjs(index_node,nodes):
 
     return nodes.list_nodes[index_node]['Objs']
 
-if __name__ == '__main__':
+def test_Nodes():
     global debug
 
     errMessage = "py_runtime start..."
@@ -620,3 +620,5 @@ if __name__ == '__main__':
     # nodes.mesPacked.print_message(str_node_info, PLCGlobals.INFO)
     nodes.print_list_nodes_csv()
 
+if __name__ == '__main__':
+    test_Nodes()

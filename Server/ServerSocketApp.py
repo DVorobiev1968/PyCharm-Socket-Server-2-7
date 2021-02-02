@@ -440,4 +440,5 @@ def main_thread(host, port):
             break
     del conn, addr
 
-main()
+if __name__ == '__main__':
+    main()

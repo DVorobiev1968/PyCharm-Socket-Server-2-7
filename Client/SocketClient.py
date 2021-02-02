@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import socket, sys
-from time import sleep
 
 if sys.version_info < (3, 7):
     if sys.platform == "linux" or sys.platform == "linux2":
@@ -18,9 +17,9 @@ else:
     elif sys.platform == "win32":
         pass
 
-from MesPacked import MesPacked, NodeInfo
-from Nodes import Nodes
-from PLCGlobals import PLCGlobals
+from Server.MesPacked import MesPacked, NodeInfo
+from Server.Nodes import Nodes
+from Server.PLCGlobals import PLCGlobals
 
 class SocketClient():
     """
