@@ -20,10 +20,10 @@ else:
         def double(arg):
             return Decimal(arg)
 
-from switch import switch
-from PLCGlobals import PLCGlobals
-from MesPacked import MesPacked
-from AlgoritmInfo import AlgoritmInfo
+from Server.switch import switch
+from Server.PLCGlobals import PLCGlobals
+from Server.MesPacked import MesPacked
+from Server.AlgoritmInfo import AlgoritmInfo
 
 class Nodes():
     """

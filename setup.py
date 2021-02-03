@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 from os.path import join, dirname
 import Server
+import Client
 
 setup(
     name='ServerTechData',
@@ -9,9 +10,11 @@ setup(
     long_description=open(join(dirname(__file__), 'README.rst')).read(),
     entry_points={
         'console_scripts': [
-            "server = Server.ServerSocketApp:main"
+            "serverTech = Server.ServerSocketApp:main",
+            "beremiz = Client.SocketClientApp:beremiz_simulation",
+            'test_node = Client.SocketClientApp:test_node'
         ]
     },
     include_package_data=True,
-    stest_suite='test'
+    test_suite='TestServer'
 )

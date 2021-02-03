@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from NodeObjInfo import NodeObjInfo
-from AlgoritmInfo import AlgoritmInfo
+from Server.NodeObjInfo import NodeObjInfo
+from Server.AlgoritmInfo import AlgoritmInfo
 
 class NodeInfo():
     """

@@ -5,10 +5,10 @@ from datetime import timedelta, datetime
 from threading import Thread, Lock
 from time import sleep
 
-from AlgoritmInfo import AlgoritmInfo
-from MesPacked import MesPacked, NodeInfo
-from PLCGlobals import PLCGlobals
-from Nodes import Nodes
+from Server.AlgoritmInfo import AlgoritmInfo
+from Server.MesPacked import MesPacked, NodeInfo
+from Server.PLCGlobals import PLCGlobals
+from Server.Nodes import Nodes
 
 
 class ServerThread(Thread):

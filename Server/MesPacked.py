@@ -21,10 +21,10 @@ else:
         def double(arg):
             return Decimal(arg)
 
-from switch import switch
-from PLCGlobals import PLCGlobals
-from NodeInfo import NodeInfo
-from AlgoritmInfo import AlgoritmInfo
+from Server.switch import switch
+from Server.PLCGlobals import PLCGlobals
+from Server.NodeInfo import NodeInfo
+from Server.AlgoritmInfo import AlgoritmInfo
 
 
 class MesPacked():

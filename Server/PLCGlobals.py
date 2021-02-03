@@ -38,7 +38,5 @@ class PLCGlobals():
     WARNING = 2
     ERROR = 3
     NO_HEAD = 10
-    debug = 1
     PORT = 8889
     host = "localhost"
-    PATH = "С:\\Users\\User\\Beremiz\\beremiz_workdir\\"

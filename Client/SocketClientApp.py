@@ -3,7 +3,7 @@
 import getopt, sys
 from time import sleep
 
-from SocketClient import SocketClient
+from Client.SocketClient import SocketClient
 from Server.PLCGlobals import PLCGlobals
 
 global socketClient
@@ -34,6 +34,8 @@ def loadParameters():
         except ValueError as msg:
             usage(msg)
             return -1
+        except IndexError:
+            socketClient = SocketClient('localhost', 8889)
     else:
         socketClient = SocketClient()
 
@@ -41,9 +43,9 @@ def test_node():
     module=sys.argv[0].split('/')[-1].split('.')[0]
     sys_info="Starting {0} from Python:{1}.{2}\n".format(module,sys.version_info.major, sys.version_info.minor)
     print (sys_info)
-    # PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
-    PLCGlobals.debug = PLCGlobals.ERROR
-    loadParameters()
+    PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
+    # PLCGlobals.debug = PLCGlobals.ERROR
+    socketClient = SocketClient('localhost', 8889)
     d_value=socketClient.set_socket_node(1,0x1000,socketClient.mesPacked.CODE_SINGLE_START,10.01)
     socketClient.mesPacked.print_message("d_value:{0:4.10f}".format(d_value), PLCGlobals.INFO)
     d_value_out=socketClient.set_socket_node(1+1,0x1000,socketClient.mesPacked.CODE_SINGLE_START,20.01)
@@ -51,7 +53,7 @@ def test_node():
     d_value_src = socketClient.load_for_algoritm(1, 0x1000)
     d_value_out = socketClient.load_for_algoritm(1 + 1, 0x1000)
     d_value_out = 0 - d_value_src
-    sleep(0.020)
+    sleep(0.02)
     d_value_src = socketClient.save_for_algoritm(1, 0x1000, d_value_src)
     d_value_out = socketClient.save_for_algoritm(2, 0x1000, d_value_out)
     socketClient.mesPacked.print_message("d_value_src:{0:4.10f}".format(d_value_src), PLCGlobals.INFO)
