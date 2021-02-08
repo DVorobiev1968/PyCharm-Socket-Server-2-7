@@ -1,16 +1,29 @@
 @echo off
-set BEREMIZ_LIB=C:\Users\user26\Beremiz-1.2\python\Lib\user
+chcp 1251 > nul
+set BEREMIZ_LIB=C:\Users\user26\Beremiz-1.2\python\Lib\
+set BEREMIZ_LIB_SERVER=%BEREMIZ_LIB%\Server
+set BEREMIZ_LIB_CLIENT=%BEREMIZ_LIB%\Client
 set HOME_PROJECT=%CD%
-cd %BEREMIZ_LIB%
-del /Q *.pyc
-copy /Y %HOME_PROJECT%\Mespacked.py %BEREMIZ_LIB%\Mespacked.py
-copy /Y %HOME_PROJECT%\Algoritm.py %BEREMIZ_LIB%\Algoritm.py
-copy /Y %HOME_PROJECT%\NodeInfo.py %BEREMIZ_LIB%\NodeInfo.py
-copy /Y %HOME_PROJECT%\NodeObjInfo.py %BEREMIZ_LIB%\NodeObjInfo.py
-copy /Y %HOME_PROJECT%\Nodes.py %BEREMIZ_LIB%\Nodes.py
-copy /Y %HOME_PROJECT%\PLCGlobals.py %BEREMIZ_LIB%\PLCGlobals.py
-copy /Y %HOME_PROJECT%\SocketClient.py %BEREMIZ_LIB%\SocketClient.py
-copy /Y %HOME_PROJECT%\switch.py %BEREMIZ_LIB%\switch.py
-copy /Y %HOME_PROJECT%\ServerSocketApp.py %BEREMIZ_LIB%\ServerSocketApp.py
-copy /Y %HOME_PROJECT%\ServerSocketApp.bat %BEREMIZ_LIB%\ServerSocketApp.bat
+set SERVER_DIR=%HOME_PROJECT%\Server
+set CLIENT_DIR=%HOME_PROJECT%\Client
+mkdir %BEREMIZ_LIB_SERVER%
+mkdir %BEREMIZ_LIB_CLIENT%
+del /Q %BEREMIZ_LIB_SERVER%\*.pyc
+del /Q %BEREMIZ_LIB_CLIENT%\*.pyc
+
+copy /Y %SERVER_DIR%\Mespacked.py %BEREMIZ_LIB_SERVER%\Mespacked.py
+copy /Y %SERVER_DIR%\AlgoritmInfo.py %BEREMIZ_LIB_SERVER%\AlgoritmInfo.py
+copy /Y %SERVER_DIR%\NodeInfo.py %BEREMIZ_LIB_SERVER%\NodeInfo.py
+copy /Y %SERVER_DIR%\NodeObjInfo.py %BEREMIZ_LIB_SERVER%\NodeObjInfo.py
+copy /Y %SERVER_DIR%\Nodes.py %BEREMIZ_LIB_SERVER%\Nodes.py
+copy /Y %SERVER_DIR%\PLCGlobals.py %BEREMIZ_LIB_SERVER%\PLCGlobals.py
+copy /Y %SERVER_DIR%\switch.py %BEREMIZ_LIB_SERVER%\switch.py
+copy /Y %SERVER_DIR%\ServerSocketApp.py %BEREMIZ_LIB_SERVER%\ServerSocketApp.py
+copy /Y %SERVER_DIR%\__init__.py %BEREMIZ_LIB_SERVER%\__init__.py
+
+copy /Y %CLIENT_DIR%\SocketClient.py %BEREMIZ_LIB_CLIENT%\SocketClient.py
+copy /Y %CLIENT_DIR%\__init__.py %BEREMIZ_LIB_CLIENT%\__init__.py
+
+copy /Y %HOME_PROJECT%\ServerSocketApp.bat %BEREMIZ_LIB%ServerSocketApp.bat
+
 @echo on

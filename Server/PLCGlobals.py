@@ -39,4 +39,5 @@ class PLCGlobals():
     ERROR = 3
     NO_HEAD = 10
     PORT = 8889
+    debug = 1
     host = "localhost"
