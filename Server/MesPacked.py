@@ -139,6 +139,7 @@ class MesPacked():
         self.CODE_LIST_NODES = 10
         self.CODE_FIND_NODES = 11
         self.CODE_FIND_NODES_SYNC = 12
+        self.CODE_START_FIND_NODES = 15
         self.CODE_LOAD_FOR_ALGORITM = 13
         self.CODE_SAVE_FOR_ALGORITM = 14
         self.CODE_EXIT = 20
@@ -168,6 +169,7 @@ class MesPacked():
             self.CODE_LIST_NODES: "Printing nodes list",
             self.CODE_FIND_NODES: "Search nodes and objext",
             self.CODE_FIND_NODES_SYNC: "Search nodes and objext synchronisation with FB",
+            self.CODE_START_FIND_NODES: "Search nodes and objext within one session",
             self.CODE_LOAD_FOR_ALGORITM: "Search nodes and objext and load data of node for Algoritm",
             self.CODE_SAVE_FOR_ALGORITM: "Save data from Algoritm",
             self.CODE_EXIT: "Close connect Client stopped",

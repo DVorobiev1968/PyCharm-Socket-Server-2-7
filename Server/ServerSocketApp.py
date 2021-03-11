@@ -298,6 +298,28 @@ class ServerThread(Thread):
                 # stdout.write(nodeStruct.o_obj.s_message)
                 # mesPacked.print_message("CODE_EXIT->:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                 break
+            elif nodeStruct.i_codeCommand == mesPacked.CODE_START_FIND_NODES:
+                mesPacked.print_message("CODE_START_FIND_NODES:{0}, id_Obj:{1:d}({1:4X})".
+                                        format(nodeStruct.i_idNode,
+                                               nodeStruct.o_obj.h_idObj), PLCGlobals.INFO)
+                i_node, i_obj = nodes.find_node_obj(nodeStruct.i_idNode, nodeStruct.o_obj.h_idObj)
+                if (i_node != nodes.FIND_NODE_ERR and
+                        i_obj != nodes.FIND_OBJ_ERR):
+                    nodeStruct = mesPacked.setCommandNodeStruct(nodes.list_nodes[i_node]["i_codeCommand"],
+                                                                mesPacked.SEARCH_OK,
+                                                                nodes.list_nodes[i_node]["i_idNode"],
+                                                                nodes.list_nodes[i_node]["Objs"][i_obj]["h_idObj"],
+                                                                nodes.list_nodes[i_node]["Objs"][i_obj]["h_idSubObj"],
+                                                                nodes.list_nodes[i_node]["Objs"][i_obj]["d_value"])
+                    i_length, nodeStruct = mesPacked.setB_message(nodes.list_nodes[i_node]["i_codeCommand"], nodeStruct)
+                else:
+                    nodeStruct=mesPacked.setCommandNodeStruct(mesPacked.CODE_START_FIND_NODES, mesPacked.SEARCH_FAIL)
+                    i_length, nodeStruct = mesPacked.setB_message(mesPacked.SEARCH_FAIL, nodeStruct)
+                stdout=self.conn.makefile("w")
+                stdout.write(str(nodeStruct.o_obj.s_message))
+                mesPacked.print_message("CODE_START_FIND_NODES->:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.BREAK_DEBUG)
+                stdout.close()
+                data=stdin.readline()
             elif nodeStruct.i_codeCommand == mesPacked.CODE_FIND_NODES:
                 mesPacked.print_message("CODE_FIND_NODES:{0}, id_Obj:{1:d}({1:4X})".
                                         format(nodeStruct.i_idNode,
@@ -424,7 +446,7 @@ def main_thread(host, port):
     sock.listen(1000)
     PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.WARNING)
-    # PLCGlobals.debug = PLCGlobals.ERROR
+    PLCGlobals.debug = PLCGlobals.ERROR
 
     while 1:
         (conn, addr) = sock.accept()
