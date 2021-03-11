@@ -108,6 +108,7 @@ class MesPacked():
         self.code_status = 0
         self.errMessage = str("")
         self.DELIM = str(";\r\n")
+        self.EOF=chr(0x0A)
         self.LEN_DELIM = 3
         # коды блока готовности Алгоритмов и их описание
         self.CODE_ALGORITM_OPERATION = 50
@@ -386,7 +387,9 @@ class MesPacked():
         i_length = len(s_message)
         i_length += len(str(i_length))
         i_length += self.LEN_DELIM
-        nodeStruct.o_obj.s_message = "{0};{1}{2}".format(s_message, i_length, self.DELIM)
+        # TODO разобраться с правильным символом завершения телеграммы
+        # nodeStruct.o_obj.s_message = "{0};{1}{2}".format(s_message, i_length, self.DELIM)
+        nodeStruct.o_obj.s_message = "{0};{1};{2}".format(s_message, i_length, self.EOF)
         if sys.version_info < (3, 7):
             nodeStruct.o_obj.b_message = bytes(nodeStruct.o_obj.s_message)
         else:

@@ -51,6 +51,7 @@ class ServerThread(Thread):
 
         mesPacked.print_message("Info nodes:{0}.".format(nodes.readInfoNodes()),PLCGlobals.INFO)
         stdin = self.conn.makefile("r")
+        # TODO перенес в тело цикла,подумать как еще можно открывать stdout
         stdout = self.conn.makefile("w")
         self.parser(stdin, stdout)
         mesPacked.print_message("Thread {0:s} is done. i_codeCommand {1}.".
@@ -219,6 +220,7 @@ class ServerThread(Thread):
                 self.lock.acquire()
                 self.save_node(i_status, nodeStruct)
                 self.lock.release()
+                stdout = self.conn.makefile("w")
                 if i_status == mesPacked.OK:
                     mesPacked.print_message("CODE_START<-:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                     mesPacked.setB_message(i_status,nodeStruct)
@@ -228,6 +230,7 @@ class ServerThread(Thread):
                     mesPacked.setB_message(i_status,nodeStruct)
                     stdout.write(nodeStruct.o_obj.s_message)
                     mesPacked.print_message("Error in s_message:{0}".format(nodeStruct.o_obj.s_message), PLCGlobals.ERROR)
+                stdout.close()
                 data = stdin.readline()
             elif nodeStruct.i_codeCommand == mesPacked.CODE_SINGLE_START_SYNC:
                 if i_status == mesPacked.OK:
@@ -291,8 +294,9 @@ class ServerThread(Thread):
             elif nodeStruct.i_codeCommand == mesPacked.CODE_EXIT:
                 mesPacked.print_message("CODE_EXIT:{0}...".format(nodeStruct.i_codeCommand), PLCGlobals.INFO)
                 mesPacked.setCommandNodeStruct(mesPacked.CODE_EXIT)
-                stdout.write(nodeStruct.o_obj.s_message)
-                mesPacked.print_message("CODE_EXIT->:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
+                # TODO разобраться насколько необходимо оповещать клиента об окончании сессии
+                # stdout.write(nodeStruct.o_obj.s_message)
+                # mesPacked.print_message("CODE_EXIT->:{0}".format(nodeStruct.o_obj.b_message), PLCGlobals.BREAK_DEBUG)
                 break
             elif nodeStruct.i_codeCommand == mesPacked.CODE_FIND_NODES:
                 mesPacked.print_message("CODE_FIND_NODES:{0}, id_Obj:{1:d}({1:4X})".
@@ -420,7 +424,7 @@ def main_thread(host, port):
     sock.listen(1000)
     PLCGlobals.debug = PLCGlobals.BREAK_DEBUG
     mesPacked.print_message("Listening on port:{0:d}...".format(port), PLCGlobals.WARNING)
-    PLCGlobals.debug = PLCGlobals.ERROR
+    # PLCGlobals.debug = PLCGlobals.ERROR
 
     while 1:
         (conn, addr) = sock.accept()
